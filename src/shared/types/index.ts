@@ -12,6 +12,7 @@ export interface EnrolledCourse {
   creditHours: number
   grade: number
   gradePoints: number
+  regulationSatisfied?: boolean
 }
 
 export interface AIPlan {

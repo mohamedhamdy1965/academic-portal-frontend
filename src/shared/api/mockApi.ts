@@ -83,7 +83,7 @@ function buildPlan(user: User) {
     }))
 }
 
-function makeCourse(courseCode: string, grade: number): EnrolledCourse | null {
+function makeCourse(courseCode: string, grade: number, regulationSatisfied?: boolean): EnrolledCourse | null {
   const code = courseCode.replace(/\s+/g, '').toUpperCase()
   const course = COURSES_RAW.find((item) => item.code === code)
   if (!course) return null
@@ -95,6 +95,7 @@ function makeCourse(courseCode: string, grade: number): EnrolledCourse | null {
     creditHours: course.credits,
     grade,
     gradePoints: gradeToPoints(grade),
+    regulationSatisfied: regulationSatisfied ?? true,
   }
 }
 
@@ -396,6 +397,32 @@ function updateCurrentUser(mutator: (user: StoredUser) => void) {
   return user
 }
 
+function updateTargetUser(studentId: string | undefined, mutator: (user: StoredUser) => void) {
+  const userId = userIdFromToken()
+  if (!userId) return null
+
+  const users = readUsers()
+  let targetUser: StoredUser | undefined
+
+  if (studentId && requireAdmin()) {
+    targetUser = users.find((item) => item.studentId === studentId || item._id === studentId)
+  } else {
+    targetUser = users.find((item) => item._id === userId)
+  }
+
+  if (!targetUser) return null
+
+  mutator(targetUser)
+  targetUser.updatedAt = new Date().toISOString()
+  recalculateAcademicStats(targetUser)
+  writeUsers(users)
+
+  if (targetUser._id === userId) {
+    localStorage.setItem('gp_user', JSON.stringify(sanitizeUser(targetUser)))
+  }
+  return targetUser
+}
+
 export const mockAuthApi = {
   async login(email: string, password: string): Promise<LoginResponse> {
     const user = readUsers().find((item) => item.email.toLowerCase() === email.toLowerCase())
@@ -460,11 +487,11 @@ export const mockUserApi = {
     return delay(sanitizeUser(user))
   },
 
-  async addCourse(courseCode: string, grade: number): Promise<AddCourseResponse> {
-    const nextCourse = makeCourse(courseCode, Number(grade))
+  async addCourse(courseCode: string, grade: number, regulationSatisfied?: boolean, studentId?: string): Promise<AddCourseResponse> {
+    const nextCourse = makeCourse(courseCode, Number(grade), regulationSatisfied)
     if (!nextCourse) return reject('Course not found', 404)
 
-    const user = updateCurrentUser((draft) => {
+    const user = updateTargetUser(studentId, (draft) => {
       const attempts = draft.enrolledCourses?.filter((course) => course.courseCode === nextCourse.courseCode) ?? []
       if (attempts.some((course) => course.grade >= 60)) {
         throw new Error('You already passed this course')
@@ -476,13 +503,16 @@ export const mockUserApi = {
     return delay({ msg: 'Course added successfully', course: nextCourse })
   },
 
-  async editCourse(courseId: string, grade: number): Promise<EditCourseResponse> {
+  async editCourse(courseId: string, grade: number, regulationSatisfied?: boolean, studentId?: string): Promise<EditCourseResponse> {
     let updatedCourse: EnrolledCourse | null = null
-    const user = updateCurrentUser((draft) => {
+    const user = updateTargetUser(studentId, (draft) => {
       const course = draft.enrolledCourses?.find((item) => item._id === courseId)
       if (!course) throw new Error('Course not found')
       course.grade = Number(grade)
       course.gradePoints = gradeToPoints(Number(grade))
+      if (regulationSatisfied !== undefined) {
+        course.regulationSatisfied = regulationSatisfied
+      }
       updatedCourse = course
     })
 
@@ -491,8 +521,8 @@ export const mockUserApi = {
     return delay({ msg: 'Course updated successfully', course: updatedCourse })
   },
 
-  async deleteCourse(courseId: string) {
-    const user = updateCurrentUser((draft) => {
+  async deleteCourse(courseId: string, studentId?: string) {
+    const user = updateTargetUser(studentId, (draft) => {
       const before = draft.enrolledCourses?.length ?? 0
       draft.enrolledCourses = (draft.enrolledCourses ?? []).filter((course) => course._id !== courseId)
       if ((draft.enrolledCourses?.length ?? 0) === before) {

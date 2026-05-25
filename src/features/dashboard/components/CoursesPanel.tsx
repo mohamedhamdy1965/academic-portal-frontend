@@ -6,6 +6,8 @@ import { Table, HoverRow, TABLE_TD } from '@/shared/components/ui/Table'
 import { GRADE_BG, gradeLabel } from '@/shared/constants'
 import type { EnrolledCourse } from '@/shared/types'
 import { CourseFormModal, type CourseFormValues } from './CourseFormModal'
+import { isAcademicConflict } from '@/features/academic/utils/academic'
+import { AcademicConflictBadge } from '@/shared/components/ui/AcademicConflictBadge'
 
 interface CoursesPanelProps {
   courses: EnrolledCourse[]
@@ -13,7 +15,7 @@ interface CoursesPanelProps {
   editPending: boolean
   deletePending: boolean
   onAddCourse: (values: CourseFormValues, onSuccess: () => void) => void
-  onEditCourse: (courseId: string, grade: number, onSuccess: () => void) => void
+  onEditCourse: (courseId: string, grade: number, regulationSatisfied: boolean, onSuccess: () => void) => void
   onDeleteCourse: (courseId: string, onSuccess: () => void) => void
 }
 
@@ -94,7 +96,7 @@ export function CoursesPanel({
         onClose={() => setEditingCourse(null)}
         onSubmit={(values) => {
           if (!editingCourse) return
-          onEditCourse(editingCourse._id, values.grade, () => setEditingCourse(null))
+          onEditCourse(editingCourse._id, values.grade, values.regulationSatisfied, () => setEditingCourse(null))
         }}
       />
 
@@ -125,6 +127,7 @@ function CourseRow({
 }) {
   const grade = gradeLabel(course.grade)
   const passed = course.grade >= 60
+  const hasConflict = isAcademicConflict(course)
 
   return (
     <HoverRow>
@@ -136,23 +139,26 @@ function CourseRow({
       <td style={{ ...TABLE_TD, textAlign: 'center', fontWeight: 900 }}>{course.grade}</td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>{(course.gradePoints ?? 0).toFixed(2)}</td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '.35rem',
-            minHeight: 26,
-            borderRadius: 6,
-            padding: '0 .55rem',
-            color: passed ? 'var(--success)' : 'var(--danger)',
-            background: GRADE_BG[grade.cls],
-            fontSize: '.76rem',
-            fontWeight: 900,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {passed ? 'ناجح' : 'متابعة'} · {grade.ar}
-        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.35rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '.35rem',
+              minHeight: 26,
+              borderRadius: 6,
+              padding: '0 .55rem',
+              color: passed ? 'var(--success)' : 'var(--danger)',
+              background: GRADE_BG[grade.cls],
+              fontSize: '.76rem',
+              fontWeight: 900,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {passed ? 'ناجح' : 'متابعة'} · {grade.ar}
+          </span>
+          {hasConflict && <AcademicConflictBadge />}
+        </div>
       </td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '.4rem' }}>

@@ -24,11 +24,16 @@ export function useAddCourse() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ courseCode, grade }: { courseCode: string; grade: number }) =>
-      userApi.addCourse(courseCode, grade),
-    onSuccess: (data) => {
+    mutationFn: ({ courseCode, grade, regulationSatisfied, studentId }: { courseCode: string; grade: number; regulationSatisfied?: boolean; studentId?: string }) =>
+      userApi.addCourse(courseCode, grade, regulationSatisfied, studentId),
+    onSuccess: (data, variables) => {
       toast(`تمت إضافة ${data.course?.courseName ?? ''} بنجاح ✅`, 'success')
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
+      if (variables.studentId) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.analytics() })
+      } else {
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
+      }
     },
     onError: (err: { message: string }) => {
       toast(err.message, 'error')
@@ -42,11 +47,16 @@ export function useEditCourse() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ courseId, grade }: { courseId: string; grade: number }) =>
-      userApi.editCourse(courseId, grade),
-    onSuccess: () => {
+    mutationFn: ({ courseId, grade, regulationSatisfied, studentId }: { courseId: string; grade: number; regulationSatisfied?: boolean; studentId?: string }) =>
+      userApi.editCourse(courseId, grade, regulationSatisfied, studentId),
+    onSuccess: (data, variables) => {
       toast('تم تعديل الدرجة ✓', 'success')
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
+      if (variables.studentId) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.analytics() })
+      } else {
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
+      }
     },
     onError: (err: { message: string }) => {
       toast(err.message, 'error')
@@ -60,10 +70,20 @@ export function useDeleteCourse() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (courseId: string) => userApi.deleteCourse(courseId),
-    onSuccess: () => {
+    mutationFn: (payload: string | { courseId: string; studentId?: string }) => {
+      const courseId = typeof payload === 'string' ? payload : payload.courseId
+      const studentId = typeof payload === 'string' ? undefined : payload.studentId
+      return userApi.deleteCourse(courseId, studentId)
+    },
+    onSuccess: (data, variables) => {
       toast('تم حذف المادة', 'info')
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
+      const studentId = typeof variables === 'string' ? undefined : variables.studentId
+      if (studentId) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.analytics() })
+      } else {
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
+      }
     },
     onError: (err: { message: string }) => {
       toast(err.message, 'error')

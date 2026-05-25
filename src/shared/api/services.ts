@@ -29,14 +29,14 @@ const remoteUserApi = {
   getProfile: () =>
     apiClient.get<User>('/user/profile').then((r) => r.data),
 
-  addCourse: (courseCode: string, grade: number) =>
-    apiClient.post<AddCourseResponse>('/user/course', { courseCode, grade }).then((r) => r.data),
+  addCourse: (courseCode: string, grade: number, regulationSatisfied?: boolean, studentId?: string) =>
+    apiClient.post<AddCourseResponse>('/user/course', { courseCode, grade, regulationSatisfied, studentId }).then((r) => r.data),
 
-  editCourse: (courseId: string, grade: number) =>
-    apiClient.put<EditCourseResponse>(`/user/course/${courseId}`, { grade }).then((r) => r.data),
+  editCourse: (courseId: string, grade: number, regulationSatisfied?: boolean, studentId?: string) =>
+    apiClient.put<EditCourseResponse>(`/user/course/${courseId}`, { grade, regulationSatisfied, studentId }).then((r) => r.data),
 
-  deleteCourse: (courseId: string) =>
-    apiClient.delete<{ msg: string }>(`/user/course/${courseId}`).then((r) => r.data),
+  deleteCourse: (courseId: string, studentId?: string) =>
+    apiClient.delete<{ msg: string }>(`/user/course/${courseId}`, { data: { studentId } }).then((r) => r.data),
 
   updatePreferredDepartment: (preferredDepartment: PreferredDepartment) =>
     apiClient

@@ -97,8 +97,8 @@ export default function DashboardPage() {
           onAddCourse={(values, onSuccess) => {
             addCourse.mutate(values, { onSuccess })
           }}
-          onEditCourse={(courseId, grade, onSuccess) => {
-            editCourse.mutate({ courseId, grade }, { onSuccess })
+          onEditCourse={(courseId, grade, regulationSatisfied, onSuccess) => {
+            editCourse.mutate({ courseId, grade, regulationSatisfied }, { onSuccess })
           }}
           onDeleteCourse={(courseId, onSuccess) => {
             deleteCourse.mutate(courseId, { onSuccess })

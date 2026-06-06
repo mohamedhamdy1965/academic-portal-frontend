@@ -81,9 +81,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           top: 0,
           zIndex: 50,
           transition: 'transform .3s ease',
-          transform: open
-            ? 'translateX(0)'
-            : (isRtl ? 'translateX(100%)' : 'translateX(-100%)'),
+          transform: open ? 'translateX(0)' : undefined,
         }}
       >
         {/* Logo */}

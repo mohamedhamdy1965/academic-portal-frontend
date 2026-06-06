@@ -34,6 +34,9 @@ export default function DashboardPage() {
   if (user?.role === 'super_admin') {
     return <Navigate to="/dashboard/super-admin" replace />
   }
+  if (user?.role === 'guest') {
+    return <Navigate to="/guest" replace />
+  }
 
   if (isLoading && !user) {
     return <StudentDashboardSkeleton />

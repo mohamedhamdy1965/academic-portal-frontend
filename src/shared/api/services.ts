@@ -23,6 +23,9 @@ const remoteAuthApi = {
       '/auth/register',
       payload,
     ).then((r) => r.data),
+
+  loginGuest: () =>
+    apiClient.post<LoginResponse>('/auth/guest').then((r) => r.data),
 }
 
 const remoteUserApi = {

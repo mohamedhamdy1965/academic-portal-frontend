@@ -1,12 +1,14 @@
+import { useTranslation } from 'react-i18next'
 import type { AdminAnalytics } from '@/shared/types'
 
 export function AdminAnalyticsCards({ analytics }: { analytics: AdminAnalytics }) {
+  const { t } = useTranslation()
   const cards = [
-    { label: 'إجمالي الطلاب', value: analytics.totalStudents, color: 'var(--accent)' },
-    { label: 'مواد نشطة', value: analytics.activeCourses, color: 'var(--success)' },
-    { label: 'مواد غير نشطة', value: analytics.inactiveCourses, color: 'var(--gold)' },
-    { label: 'متوسط GPA', value: analytics.averageGpa.toFixed(2), color: 'var(--accent2)' },
-    { label: 'طلاب تحت المتابعة', value: analytics.atRiskStudents, color: analytics.atRiskStudents ? 'var(--danger)' : 'var(--muted2)' },
+    { label: t('admin.analytics.totalStudents') || t('admin.studentName'), value: analytics.totalStudents, color: 'var(--accent)' },
+    { label: t('admin.analytics.activeCourses'), value: analytics.activeCourses, color: 'var(--success)' },
+    { label: t('admin.analytics.inactiveCourses'), value: analytics.inactiveCourses, color: 'var(--gold)' },
+    { label: t('admin.analytics.averageGpa'), value: analytics.averageGpa.toFixed(2), color: 'var(--accent2)' },
+    { label: t('admin.analytics.atRiskStudents'), value: analytics.atRiskStudents, color: analytics.atRiskStudents ? 'var(--danger)' : 'var(--muted2)' },
   ]
 
   return (

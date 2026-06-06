@@ -1,25 +1,36 @@
 import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
+import { LanguageSwitcher } from '../ui/LanguageSwitcher'
 
-// Current academic semester — in a real system this would come from the backend
-// or a configuration endpoint. Kept as a constant here since the backend
-// has no /academic-calendar endpoint.
-const CURRENT_SEMESTER = 'الفصل الدراسي الثاني 2024 / 2025'
-
-const TITLES: Record<string, string> = {
-  '/dashboard':            'لوحة التحكم',
-  '/dashboard/curriculum': 'اللائحة الدراسية',
-  '/dashboard/results':    'النتائج والدرجات',
-  '/dashboard/predictor':  'توقع الدرجة 🔮',
-  '/dashboard/aiplan':     'الخطة الأكاديمية الذكية 🤖',
-  '/dashboard/admin':      'لوحة الإدارة',
-  '/dashboard/super-admin': 'لوحة الإشراف العام',
+const TITLE_KEYS: Record<string, string> = {
+  '/dashboard':            'sidebar.dashboard',
+  '/dashboard/curriculum': 'sidebar.curriculum',
+  '/dashboard/results':    'sidebar.results',
+  '/dashboard/predictor':  'sidebar.gradePredictor',
+  '/dashboard/aiplan':     'sidebar.academicPlanner',
+  '/dashboard/admin':      'sidebar.adminDashboard',
+  '/dashboard/super-admin': 'sidebar.superAdminDashboard',
+  '/guest':                'sidebar.guestPortal',
 }
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { pathname } = useLocation()
+  const { t, i18n } = useTranslation()
+
+  const isRtl = i18n.dir() === 'rtl'
+
+  const titleKey = TITLE_KEYS[pathname]
+  let title = titleKey ? t(titleKey) : ''
+  if (!title) {
+    if (pathname.startsWith('/dashboard/admin/students')) {
+      title = t('admin.adminDetailsTitle')
+    } else {
+      title = t('sidebar.mainHeader')
+    }
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -27,7 +38,8 @@ export function DashboardLayout() {
 
       <div
         style={{
-          marginRight: 'var(--sidebar-w)',
+          marginRight: isRtl ? 'var(--sidebar-w)' : 0,
+          marginLeft: isRtl ? 0 : 'var(--sidebar-w)',
           flex: 1,
           minHeight: '100vh',
           display: 'flex',
@@ -50,7 +62,7 @@ export function DashboardLayout() {
             gap: '1rem',
           }}
         >
-          {/* Left: hamburger + page title */}
+          {/* Right/Left depending on RTL: hamburger + page title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '.8rem', minWidth: 0 }}>
             <button
               className="hamburger"
@@ -79,35 +91,39 @@ export function DashboardLayout() {
                 textOverflow: 'ellipsis',
               }}
             >
-              {TITLES[pathname] ?? (pathname.startsWith('/dashboard/admin/students') ? 'تفاصيل الطالب' : 'البوابة الأكاديمية')}
+              {title}
             </h1>
           </div>
 
-          {/* Right: current academic semester indicator */}
-          <div
-            className="semester-badge"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '.45rem',
-              background: 'rgba(59,130,246,.07)',
-              border: '1px solid rgba(59,130,246,.15)',
-              borderRadius: 8,
-              padding: '.32rem .75rem',
-              flexShrink: 0,
-            }}
-          >
-            <span style={{ fontSize: '.72rem' }}>🗓️</span>
-            <span
+          {/* Left/Right depending on RTL: LanguageSwitcher + current academic semester indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            <LanguageSwitcher />
+
+            <div
+              className="semester-badge"
               style={{
-                fontSize: '.75rem',
-                color: 'var(--muted2)',
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '.45rem',
+                background: 'rgba(59,130,246,.07)',
+                border: '1px solid rgba(59,130,246,.15)',
+                borderRadius: 8,
+                padding: '.32rem .75rem',
+                flexShrink: 0,
               }}
             >
-              {CURRENT_SEMESTER}
-            </span>
+              <span style={{ fontSize: '.72rem' }}>🗓️</span>
+              <span
+                style={{
+                  fontSize: '.75rem',
+                  color: 'var(--muted2)',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {t('dashboard.currentSemester')}
+              </span>
+            </div>
           </div>
         </header>
 
@@ -118,12 +134,13 @@ export function DashboardLayout() {
 
       <style>{`
         @media (max-width: 768px) {
-          .main-area { margin-right: 0 !important; }
+          .main-area { margin-right: 0 !important; margin-left: 0 !important; }
           .hamburger { display: block !important; }
-          aside { transform: translateX(100%); }
+          aside { transform: ${isRtl ? 'translateX(100%)' : 'translateX(-100%)'}; }
           .semester-badge { display: none !important; }
         }
       `}</style>
     </div>
   )
 }
+

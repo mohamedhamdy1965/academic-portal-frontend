@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/providers/AuthProvider'
 import { Card, CardTitle, EmptyState } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoader } from '@/shared/components/ui/Spinner'
 import { Table, HoverRow, TABLE_TD } from '@/shared/components/ui/Table'
-import { DEPT_NAMES, gpaStanding, gradeLabel } from '@/shared/constants'
+import { gpaStanding, gradeLabel } from '@/shared/constants'
 import { useAdminStudent } from '@/shared/hooks/useAdmin'
 import { useAddCourse, useEditCourse, useDeleteCourse } from '@/shared/hooks/useProfile'
 import { isAcademicConflict } from '@/features/academic/utils/academic'
@@ -15,6 +16,7 @@ import { ConfirmDialog } from '@/shared/components/ui/Modal'
 import type { EnrolledCourse, Department } from '@/shared/types'
 
 export default function StudentDetailsPage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const { studentId = '' } = useParams()
   const navigate = useNavigate()
@@ -32,7 +34,7 @@ export default function StudentDetailsPage() {
   if (!isAdmin) return <Navigate to="/dashboard" replace />
   if (isLoading) return <PageLoader />
   if (!student) {
-    return <EmptyState icon="□" message="لم يتم العثور على الطالب." />
+    return <EmptyState icon="□" message={t('admin.studentNotFound')} />
   }
 
   const standing = gpaStanding(student.gpa ?? 0)
@@ -43,7 +45,7 @@ export default function StudentDetailsPage() {
       <Card style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
-            <CardTitle>تفاصيل الطالب</CardTitle>
+            <CardTitle>{t('admin.studentDetails')}</CardTitle>
             <h2 style={{ fontFamily: 'Tajawal, sans-serif', fontSize: '1.25rem', margin: 0 }}>
               {student.firstName} {student.lastName}
             </h2>
@@ -52,16 +54,16 @@ export default function StudentDetailsPage() {
             </div>
           </div>
           <Button type="button" variant="ghost" size="sm" onClick={() => navigate('/dashboard/admin')}>
-            رجوع
+            {t('common.back')}
           </Button>
         </div>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-        <DetailStat label="القسم" value={DEPT_NAMES[student.department as Department] ?? student.department ?? '-'} color="var(--accent)" />
-        <DetailStat label="السنة" value={student.academicYear ?? '-'} color="var(--accent2)" />
-        <DetailStat label="GPA" value={(student.gpa ?? 0).toFixed(2)} color={standing.color} />
-        <DetailStat label="الساعات" value={student.totalCreditHours ?? 0} color="var(--gold)" />
+        <DetailStat label={t('admin.studentDetailsFields.dept')} value={t('departments.' + student.department, { defaultValue: student.department ?? '-' })} color="var(--accent)" />
+        <DetailStat label={t('admin.studentDetailsFields.year')} value={student.academicYear ?? '-'} color="var(--accent2)" />
+        <DetailStat label={t('admin.studentDetailsFields.gpa')} value={(student.gpa ?? 0).toFixed(2)} color={standing.color} />
+        <DetailStat label={t('admin.studentDetailsFields.hours')} value={student.totalCreditHours ?? 0} color="var(--gold)" />
       </div>
 
       <Card>
@@ -76,28 +78,37 @@ export default function StudentDetailsPage() {
           }}
         >
           <div>
-            <CardTitle>سجل المواد</CardTitle>
+            <CardTitle>{t('admin.courseRecord')}</CardTitle>
             <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>
-              إضافة وتعديل وحذف المواد والدرجات الخاصة بالطالب.
+              {t('admin.courseRecordDesc')}
             </p>
           </div>
           <Button type="button" variant="primary" size="sm" onClick={() => setAddOpen(true)}>
-            إضافة مادة
+            {t('admin.addCourseBtn')}
           </Button>
         </div>
 
         {!courses.length ? (
           <EmptyState
             icon="□"
-            message="لا توجد مواد مسجلة لهذا الطالب."
+            message={t('admin.noRegisteredCourses')}
             action={
               <Button type="button" variant="primary" size="md" onClick={() => setAddOpen(true)}>
-                إضافة مادة
+                {t('admin.addCourseBtn')}
               </Button>
             }
           />
         ) : (
-          <Table headers={['الكود', 'اسم المادة', 'الساعات', 'الدرجة', 'التقدير', 'GPA', 'الحالة', 'إجراءات']}>
+          <Table headers={[
+            t('admin.courseTableHeader.code'),
+            t('admin.courseTableHeader.name'),
+            t('admin.courseTableHeader.credits'),
+            t('admin.courseTableHeader.grade'),
+            t('admin.courseTableHeader.standing'),
+            t('admin.courseTableHeader.gpa'),
+            t('admin.courseTableHeader.status'),
+            t('admin.courseTableHeader.actions')
+          ]}>
             {courses.map((course) => {
               const grade = gradeLabel(course.grade)
               const passed = course.grade >= 60
@@ -108,7 +119,7 @@ export default function StudentDetailsPage() {
                   <td style={TABLE_TD}>{course.courseName}</td>
                   <td style={{ ...TABLE_TD, textAlign: 'center' }}>{course.creditHours}</td>
                   <td style={{ ...TABLE_TD, textAlign: 'center', fontWeight: 900 }}>{course.grade}</td>
-                  <td style={{ ...TABLE_TD, textAlign: 'center', color: grade.color, fontWeight: 900 }}>{grade.ar}</td>
+                  <td style={{ ...TABLE_TD, textAlign: 'center', color: grade.color, fontWeight: 900 }}>{t(`grades.${grade.ar}`)}</td>
                   <td style={{ ...TABLE_TD, textAlign: 'center' }}>{course.gradePoints.toFixed(2)}</td>
                   <td style={{ ...TABLE_TD, textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '.35rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -124,15 +135,15 @@ export default function StudentDetailsPage() {
                           fontWeight: 900,
                         }}
                       >
-                        {passed ? 'ناجح' : 'متابعة'}
+                        {passed ? t('admin.courseStatus.passed') : t('admin.courseStatus.attention')}
                       </span>
                       {hasConflict && <AcademicConflictBadge />}
                     </div>
                   </td>
                   <td style={{ ...TABLE_TD, textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '.4rem' }}>
-                      <SmallAction label="تعديل" color="var(--accent)" onClick={() => setEditingCourse(course)} />
-                      <SmallAction label="حذف" color="var(--danger)" onClick={() => setDeletingCourse(course)} />
+                      <SmallAction label={t('common.edit')} color="var(--accent)" onClick={() => setEditingCourse(course)} />
+                      <SmallAction label={t('common.delete')} color="var(--danger)" onClick={() => setDeletingCourse(course)} />
                     </div>
                   </td>
                 </HoverRow>
@@ -177,9 +188,9 @@ export default function StudentDetailsPage() {
 
       <ConfirmDialog
         open={Boolean(deletingCourse)}
-        title="حذف المادة"
-        message={`هل تريد حذف ${deletingCourse?.courseName ?? 'هذه المادة'} من سجل الطالب؟`}
-        confirmLabel="حذف"
+        title={t('admin.deleteCourseConfirmTitle')}
+        message={t('admin.deleteCourseConfirmMessage', { name: deletingCourse?.courseName ?? deletingCourse?.courseCode ?? '' })}
+        confirmLabel={t('common.delete')}
         loading={deleteCourse.isPending}
         onClose={() => setDeletingCourse(null)}
         onConfirm={() => {

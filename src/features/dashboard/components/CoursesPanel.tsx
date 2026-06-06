@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle, EmptyState } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { ConfirmDialog } from '@/shared/components/ui/Modal'
@@ -28,6 +29,7 @@ export function CoursesPanel({
   onEditCourse,
   onDeleteCourse,
 }: CoursesPanelProps) {
+  const { t } = useTranslation()
   const [addOpen, setAddOpen] = useState(false)
   const [editingCourse, setEditingCourse] = useState<EnrolledCourse | null>(null)
   const [deletingCourse, setDeletingCourse] = useState<EnrolledCourse | null>(null)
@@ -46,28 +48,28 @@ export function CoursesPanel({
           }}
         >
           <div>
-            <CardTitle>المواد المسجلة</CardTitle>
+            <CardTitle>{t('dashboard.coursesPanelTitle')}</CardTitle>
             <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>
-              إدارة المواد والدرجات من نفس لوحة الطالب.
+              {t('common.general') === 'عام' ? 'إدارة المواد والدرجات من نفس لوحة الطالب.' : 'Manage courses and grades from the student dashboard.'}
             </p>
           </div>
           <Button type="button" variant="primary" size="sm" onClick={() => setAddOpen(true)}>
-            إضافة مادة
+            {t('common.addCourse')}
           </Button>
         </div>
 
         {!courses.length ? (
           <EmptyState
             icon="▦"
-            message="لا توجد مواد مسجلة بعد. أضف أول مادة لتبدأ تحليلات المعدل والخطة."
+            message={t('dashboard.emptyCourses')}
             action={
               <Button type="button" variant="primary" size="md" onClick={() => setAddOpen(true)}>
-                إضافة مادة
+                {t('common.addCourse')}
               </Button>
             }
           />
         ) : (
-          <Table headers={['الكود', 'اسم المادة', 'الساعات', 'الدرجة', 'GPA', 'الحالة', 'إجراءات']}>
+          <Table headers={[t('dashboard.code'), t('dashboard.name'), t('dashboard.credits'), t('dashboard.grade'), 'GPA', t('dashboard.status'), t('dashboard.actions')]}>
             {courses.map((course) => (
               <CourseRow
                 key={course._id}
@@ -102,9 +104,9 @@ export function CoursesPanel({
 
       <ConfirmDialog
         open={Boolean(deletingCourse)}
-        title="حذف المادة"
-        message={`هل تريد حذف ${deletingCourse?.courseName ?? 'هذه المادة'} من السجل؟`}
-        confirmLabel="حذف"
+        title={t('common.deleteCourse')}
+        message={t('common.general') === 'عام' ? `هل تريد حذف ${deletingCourse?.courseName ?? 'هذه المادة'} من السجل؟` : `Are you sure you want to delete ${deletingCourse?.courseName ?? 'this course'} from the record?`}
+        confirmLabel={t('common.delete')}
         loading={deletePending}
         onClose={() => setDeletingCourse(null)}
         onConfirm={() => {
@@ -125,6 +127,7 @@ function CourseRow({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation()
   const grade = gradeLabel(course.grade)
   const passed = course.grade >= 60
   const hasConflict = isAcademicConflict(course)
@@ -155,15 +158,15 @@ function CourseRow({
               whiteSpace: 'nowrap',
             }}
           >
-            {passed ? 'ناجح' : 'متابعة'} · {grade.ar}
+            {passed ? t('dashboard.statusPassed') : t('dashboard.statusFailed').split(' / ')[0]} · {t(`grades.${grade.ar}`)}
           </span>
           {hasConflict && <AcademicConflictBadge />}
         </div>
       </td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '.4rem' }}>
-          <SmallAction label="تعديل" color="var(--accent)" onClick={onEdit} />
-          <SmallAction label="حذف" color="var(--danger)" onClick={onDelete} />
+          <SmallAction label={t('common.edit')} color="var(--accent)" onClick={onEdit} />
+          <SmallAction label={t('common.delete')} color="var(--danger)" onClick={onDelete} />
         </div>
       </td>
     </HoverRow>

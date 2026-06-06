@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useProfile } from '@/shared/hooks/useProfile'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { toast } from '@/providers/ToastProvider'
@@ -30,6 +31,7 @@ interface EnrichedCourse extends AIPlanCourse {
 function enrichAndGroup(
   plan: AIPlanCourse[],
   passedCodes: Set<string>,
+  t: (key: string) => string
 ): SemesterGroup[] {
   // Enrich each plan course with static curriculum metadata
   const enriched: EnrichedCourse[] = plan.map((c) => {
@@ -53,8 +55,8 @@ function enrichAndGroup(
 
   if (available.length > 0) {
     groups.push({
-      label: 'متاحة للتسجيل الآن',
-      sublabel: 'استوفيت جميع المتطلبات السابقة لهذه المواد',
+      label: t('aiplan.availableLabel'),
+      sublabel: t('aiplan.availableDesc'),
       color: 'var(--success)',
       icon: '✅',
       courses: available,
@@ -62,8 +64,8 @@ function enrichAndGroup(
   }
   if (semester1.length > 0) {
     groups.push({
-      label: 'الفصل الدراسي الأول',
-      sublabel: 'مواد تُقدَّم في الفصل الأول',
+      label: t('aiplan.semester1Label'),
+      sublabel: t('aiplan.semester1Desc'),
       color: 'var(--accent)',
       icon: '📘',
       courses: semester1,
@@ -71,8 +73,8 @@ function enrichAndGroup(
   }
   if (semester2.length > 0) {
     groups.push({
-      label: 'الفصل الدراسي الثاني',
-      sublabel: 'مواد تُقدَّم في الفصل الثاني',
+      label: t('aiplan.semester2Label'),
+      sublabel: t('aiplan.semester2Desc'),
       color: 'var(--accent2)',
       icon: '📗',
       courses: semester2,
@@ -80,8 +82,8 @@ function enrichAndGroup(
   }
   if (open.length > 0) {
     groups.push({
-      label: 'اختيارية — أي فصل',
-      sublabel: 'مواد اختيارية يمكن تسجيلها في أي فصل',
+      label: t('aiplan.electiveLabel'),
+      sublabel: t('aiplan.electiveDesc'),
       color: 'var(--gold)',
       icon: '📙',
       courses: open,
@@ -94,6 +96,7 @@ function enrichAndGroup(
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AIPlanPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { data: profile, isLoading, isFetching } = useProfile()
 
@@ -108,15 +111,15 @@ export default function AIPlanPage() {
     await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() })
     const fresh = queryClient.getQueryData<typeof profile>(queryKeys.user.profile())
     if (!fresh?.AI_plan?.plan?.length) {
-      toast('لم يتم توليد الخطة بعد — أضف مزيداً من المواد حتى يتمكن النظام من إنشائها', 'info')
+      toast(t('aiplan.toastNotGenerated'), 'info')
     } else {
-      toast('تم تحديث الخطة ✓', 'success')
+      toast(t('aiplan.toastUpdated'), 'success')
     }
   }
 
   if (isLoading && !profile) return <PageLoader />
 
-  const groups       = enrichAndGroup(plan, passedCodes)
+  const groups       = enrichAndGroup(plan, passedCodes, t)
   const totalCredits = plan.reduce((s, c) => s + (c.creditHours ?? 3), 0)
 
   return (
@@ -134,13 +137,13 @@ export default function AIPlanPage() {
           }}
         >
           <div>
-            <CardTitle>🤖 خطتي الأكاديمية الذكية</CardTitle>
+            <CardTitle>🤖 {t('aiplan.title')}</CardTitle>
             <p style={{ fontSize: '.83rem', color: 'var(--muted)', marginTop: '-.6rem' }}>
-              المواد المقترحة بناءً على مساركَ الأكاديمي والمتطلبات السابقة المجتازة
+              {t('aiplan.desc')}
             </p>
           </div>
           <Button variant="ghost" size="sm" loading={isFetching} onClick={handleRefresh}>
-            🔄 تحديث الخطة
+            🔄 {t('aiplan.refreshBtn')}
           </Button>
         </div>
 
@@ -155,12 +158,12 @@ export default function AIPlanPage() {
               flexWrap: 'wrap',
             }}
           >
-            <PlanStat icon="📚" value={plan.length} label="مادة مقترحة" />
-            <PlanStat icon="⏱" value={totalCredits} label="ساعة معتمدة" />
+            <PlanStat icon="📚" value={plan.length} label={t('aiplan.suggestedCourse')} />
+            <PlanStat icon="⏱" value={totalCredits} label={t('aiplan.creditHour')} />
             <PlanStat
               icon="✅"
-              value={groups.find((g) => g.color === 'var(--success)')?.courses.length ?? 0}
-              label="متاحة للتسجيل الآن"
+              value={groups.find((g) => g.label === t('aiplan.availableLabel'))?.courses.length ?? 0}
+              label={t('aiplan.availableLabel')}
               color="var(--success)"
             />
           </div>
@@ -171,10 +174,10 @@ export default function AIPlanPage() {
       {plan.length === 0 ? (
         <EmptyState
           icon="🤖"
-          message="لم تُولَّد خطة أكاديمية بعد. تُنشأ الخطة تلقائياً من نظام الذكاء الاصطناعي في الخادم بعد إضافة عدد كافٍ من المواد. اضغط «تحديث» للتحقق من جاهزيتها."
+          message={t('aiplan.emptyPlan')}
           action={
             <Button variant="primary" size="md" loading={isFetching} onClick={handleRefresh}>
-              🔄 تحقق من الخطة
+              🔄 {t('aiplan.checkPlan')}
             </Button>
           }
         />
@@ -222,6 +225,7 @@ function SemesterGroupSection({
   group: SemesterGroup
   passedCodes: Set<string>
 }) {
+  const { t } = useTranslation()
   const semCredits = group.courses.reduce((s, c) => s + (c.creditHours ?? 3), 0)
 
   return (
@@ -260,7 +264,7 @@ function SemesterGroupSection({
         </div>
         <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         <span style={{ fontSize: '.75rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-          {group.courses.length} مادة · {semCredits} ساعة
+          {t('guest.courseCount', { count: group.courses.length })} · {t('guest.statsCreditsVal', { count: semCredits })}
         </span>
       </div>
 
@@ -304,6 +308,7 @@ function PlanCourseCard({
   index: number
   passedCodes: Set<string>
 }) {
+  const { t } = useTranslation()
   // Show which prereqs are met vs pending
   const prereqStatus = course.prereqs.map((p) => ({
     code: p,
@@ -360,12 +365,12 @@ function PlanCourseCard({
             background: 'rgba(245,158,11,.1)',
             color: 'var(--gold)',
             borderRadius: 6,
-            padding: '.18rem .5rem',
+            padding: '.18rem .55rem',
             fontSize: '.72rem',
             fontWeight: 700,
           }}
         >
-          {course.creditHours ?? 3} ساعة
+          {t('guest.statsCreditsVal', { count: course.creditHours ?? 3 })}
         </span>
       </div>
 

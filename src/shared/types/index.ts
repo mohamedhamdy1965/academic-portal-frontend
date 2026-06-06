@@ -1,6 +1,6 @@
 // ─── Auth & User ──────────────────────────────────────────────────────────────
 
-export type UserRole = 'student' | 'admin' | 'super_admin'
+export type UserRole = 'student' | 'admin' | 'super_admin' | 'guest'
 
 export type Department = 'IS' | 'IT' | 'AI' | 'CS'
 export type PreferredDepartment = Department | 'General'

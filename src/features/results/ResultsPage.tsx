@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useMemo, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 
 import { useProfile, useAddCourse, useEditCourse, useDeleteCourse } from '@/shared/hooks/useProfile'
 import { gradeLabel, GRADE_BG } from '@/shared/constants'
@@ -12,51 +13,37 @@ import { Input, Field } from '@/shared/components/ui/FormPrimitives'
 import { PageLoader, Spinner } from '@/shared/components/ui/Spinner'
 import type { EnrolledCourse } from '@/shared/types'
 
-// ─── Add-course form schema ────────────────────────────────────────────────────
-
-const addCourseSchema = z.object({
-  courseCode: z
-    .string()
-    .min(1, 'يرجى إدخال كود المادة')
-    .regex(/^[A-Za-z]{2,3}\d{3}$/, 'صيغة الكود غير صحيحة (مثال: CS316)'),
-  grade: z
-    .number({ invalid_type_error: 'يرجى إدخال رقم' })
-    .min(0, 'الدرجة الدنيا 0')
-    .max(100, 'الدرجة القصوى 100'),
+// Static schemas for type inference
+const staticAddCourseSchema = z.object({
+  courseCode: z.string(),
+  grade: z.number(),
 })
 
-type AddCourseForm = z.infer<typeof addCourseSchema>
-
-// ─── Edit grade schema ─────────────────────────────────────────────────────────
-
-const editGradeSchema = z
-  .number({ invalid_type_error: 'يرجى إدخال رقم' })
-  .min(0, 'الدرجة الدنيا 0')
-  .max(100, 'الدرجة القصوى 100')
-
-// ─── Page ──────────────────────────────────────────────────────────────────────
+type AddCourseForm = z.infer<typeof staticAddCourseSchema>
 
 export default function ResultsPage() {
+  const { t } = useTranslation()
   const { data: profile, isLoading } = useProfile()
 
-  // Mutation hooks — each manages its own pending/error state via React Query
   const addCourse    = useAddCourse()
   const editCourse   = useEditCourse()
   const deleteCourse = useDeleteCourse()
 
-  // Local UI state — purely presentational, not data-fetching state
   const [editId, setEditId]         = useState<string | null>(null)
   const [editGrade, setEditGrade]   = useState('')
   const [editError, setEditError]   = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
+  const editGradeSchema = useMemo(() => z
+    .number({ invalid_type_error: t('dashboard.gradeRequired') })
+    .min(0, t('dashboard.gradeMin'))
+    .max(100, t('dashboard.gradeMax')), [t])
 
   if (isLoading && !profile) return <PageLoader />
 
   const courses = profile?.enrolledCourses ?? []
   const passed  = courses.filter((c) => c.grade >= 60)
   const failed  = courses.filter((c) => c.grade < 60)
-
-  // ── Edit handlers ─────────────────────────────────────────────────────────
 
   const startEdit = (course: EnrolledCourse) => {
     setEditId(course._id)
@@ -74,7 +61,7 @@ export default function ResultsPage() {
   const submitEdit = () => {
     const parsed = editGradeSchema.safeParse(Number(editGrade))
     if (!parsed.success) {
-      setEditError(parsed.error.errors[0]?.message ?? 'درجة غير صحيحة')
+      setEditError(parsed.error.errors[0]?.message ?? 'Invalid grade')
       return
     }
     if (!editId) return
@@ -84,11 +71,9 @@ export default function ResultsPage() {
     )
   }
 
-  // ── Delete handlers ───────────────────────────────────────────────────────
-
   const confirmDelete = (courseId: string) => {
     setConfirmDeleteId(courseId)
-    setEditId(null) // close any open edit row
+    setEditId(null)
   }
 
   const executeDelete = (courseId: string) => {
@@ -99,15 +84,13 @@ export default function ResultsPage() {
 
   return (
     <div className="animate-in">
-
-      {/* ── Add-course form ─────────────────────────────────────────────────── */}
       <AddCourseCard
         onSuccess={() => {}}
         isPending={addCourse.isPending}
         mutate={(data) => addCourse.mutate(data)}
       />
 
-      {/* ── Summary stats ───────────────────────────────────────────────────── */}
+      {/* Summary stats */}
       <div
         style={{
           display: 'grid',
@@ -116,24 +99,24 @@ export default function ResultsPage() {
           marginBottom: '1.8rem',
         }}
       >
-        <StatCard icon="⭐" value={profile?.gpa?.toFixed(2) ?? '—'} label="المعدل التراكمي" color="var(--accent)" />
-        <StatCard icon="📖" value={profile?.totalCreditHours ?? 0}   label="إجمالي الساعات المعتمدة" />
-        <StatCard icon="✅" value={passed.length}                      label="مواد ناجحة"    color="var(--success)" />
-        <StatCard icon="⚠️" value={failed.length}                      label="مواد راسبة"    color={failed.length > 0 ? 'var(--danger)' : 'var(--muted)'} />
+        <StatCard icon="⭐" value={profile?.gpa?.toFixed(2) ?? '—'} label={t('dashboard.gpa')} color="var(--accent)" />
+        <StatCard icon="📖" value={profile?.totalCreditHours ?? 0}   label={t('sidebar.curriculum')} />
+        <StatCard icon="✅" value={passed.length}                      label={t('dashboard.passedCourses')} color="var(--success)" />
+        <StatCard icon="⚠️" value={failed.length}                      label={t('dashboard.failedCourses')} color={failed.length > 0 ? 'var(--danger)' : 'var(--muted)'} />
       </div>
 
-      {/* ── Grades table ────────────────────────────────────────────────────── */}
+      {/* Grades table */}
       <Card>
-        <CardTitle>سجل الدرجات 📊</CardTitle>
+        <CardTitle>{t('results.title')} 📊</CardTitle>
 
         {!courses.length ? (
           <EmptyState
             icon="📭"
-            message="لا توجد درجات مسجلة بعد. أضف مادتك الأولى من الأعلى."
+            message={t('dashboard.emptyCourses')}
           />
         ) : (
           <Table
-            headers={['الكود', 'اسم المادة', 'الساعات', 'الدرجة', 'التقدير', 'GPA', 'الحالة', 'إجراءات']}
+            headers={[t('dashboard.code'), t('dashboard.name'), t('dashboard.credits'), t('dashboard.grade'), t('dashboard.status') === 'الحالة' ? 'التقدير' : 'Grade', 'GPA', t('dashboard.status'), t('dashboard.actions')]}
           >
             {courses.map((course) => (
               <GradeRow
@@ -167,10 +150,6 @@ export default function ResultsPage() {
   )
 }
 
-// ─── Add-course card ───────────────────────────────────────────────────────────
-// Isolated into its own component so it has its own form state and
-// doesn't re-render the entire page table when typing in the inputs.
-
 interface AddCourseCardProps {
   isPending: boolean
   onSuccess: () => void
@@ -178,13 +157,26 @@ interface AddCourseCardProps {
 }
 
 function AddCourseCard({ isPending, mutate }: AddCourseCardProps) {
+  const { t } = useTranslation()
+
+  const dynamicAddCourseSchema = useMemo(() => z.object({
+    courseCode: z
+      .string()
+      .min(1, t('dashboard.courseCodeRequired'))
+      .regex(/^[A-Za-z]{2,3}\d{3}$/, t('dashboard.courseCodeFormat')),
+    grade: z
+      .number({ invalid_type_error: t('dashboard.gradeRequired') })
+      .min(0, t('dashboard.gradeMin'))
+      .max(100, t('dashboard.gradeMax')),
+  }), [t])
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<AddCourseForm>({
-    resolver: zodResolver(addCourseSchema),
+    resolver: zodResolver(dynamicAddCourseSchema),
   })
 
   const onSubmit = (data: AddCourseForm) => {
@@ -196,7 +188,7 @@ function AddCourseCard({ isPending, mutate }: AddCourseCardProps) {
 
   return (
     <Card style={{ marginBottom: '1.8rem' }}>
-      <CardTitle>إضافة مادة ودرجة ➕</CardTitle>
+      <CardTitle>{t('common.addCourse')} ➕</CardTitle>
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
@@ -208,7 +200,7 @@ function AddCourseCard({ isPending, mutate }: AddCourseCardProps) {
         }}
         className="add-course-form"
       >
-        <Field label="كود المادة">
+        <Field label={t('dashboard.courseCodeLabel')}>
           <Input
             placeholder="CS316"
             error={errors.courseCode?.message}
@@ -217,10 +209,10 @@ function AddCourseCard({ isPending, mutate }: AddCourseCardProps) {
           />
         </Field>
 
-        <Field label="الدرجة (0 – 100)">
+        <Field label={t('dashboard.gradeLabel')}>
           <Input
             type="number"
-            placeholder="85"
+            placeholder={t('dashboard.gradePlaceholder')}
             min={0}
             max={100}
             error={errors.grade?.message}
@@ -236,7 +228,7 @@ function AddCourseCard({ isPending, mutate }: AddCourseCardProps) {
             loading={isPending}
             style={{ whiteSpace: 'nowrap', height: 46 }}
           >
-            إضافة
+            {t('common.save') === 'حفظ' ? 'إضافة' : 'Add'}
           </Button>
         </div>
       </form>
@@ -250,10 +242,6 @@ function AddCourseCard({ isPending, mutate }: AddCourseCardProps) {
     </Card>
   )
 }
-
-// ─── Grade row ─────────────────────────────────────────────────────────────────
-// Each row is its own component. This prevents the whole table re-rendering
-// when only one row's edit/confirm state changes.
 
 interface GradeRowProps {
   course: EnrolledCourse
@@ -288,11 +276,11 @@ function GradeRow({
   onDeleteConfirm,
   onDeleteCancel,
 }: GradeRowProps) {
+  const { t } = useTranslation()
   const g = gradeLabel(course.grade)
 
   return (
     <HoverRow>
-      {/* Code */}
       <td style={TABLE_TD}>
         <span
           style={{
@@ -308,13 +296,10 @@ function GradeRow({
         </span>
       </td>
 
-      {/* Name */}
       <td style={TABLE_TD}>{course.courseName || course.courseCode}</td>
 
-      {/* Credits */}
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>{course.creditHours ?? 3}</td>
 
-      {/* Grade — inline edit */}
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         {isEditing ? (
           <div>
@@ -350,7 +335,6 @@ function GradeRow({
         )}
       </td>
 
-      {/* Grade label */}
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         <span
           style={{
@@ -367,16 +351,14 @@ function GradeRow({
             color: g.color,
           }}
         >
-          {g.ar}
+          {t(`grades.${g.ar}`)}
         </span>
       </td>
 
-      {/* GPA points */}
       <td style={{ ...TABLE_TD, textAlign: 'center', fontWeight: 700 }}>
         {(course.gradePoints ?? 0).toFixed(2)}
       </td>
 
-      {/* Pass/fail */}
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         <span
           style={{
@@ -385,27 +367,25 @@ function GradeRow({
             fontSize: '.8rem',
           }}
         >
-          {course.grade >= 60 ? 'ناجح ✓' : 'راسب ✗'}
+          {course.grade >= 60 ? (t('common.save') === 'حفظ' ? 'ناجح ✓' : 'Passed ✓') : (t('common.save') === 'حفظ' ? 'راسب ✗' : 'Failed ✗')}
         </span>
       </td>
 
-      {/* Actions */}
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         {isConfirmingDelete ? (
-          // Inline confirm — no window.confirm()
           <div style={{ display: 'flex', gap: '.35rem', justifyContent: 'center', alignItems: 'center' }}>
-            <span style={{ fontSize: '.75rem', color: 'var(--muted)', marginLeft: '.25rem' }}>
-              حذف؟
+            <span style={{ fontSize: '.75rem', color: 'var(--muted)', marginLeft: '.25rem', marginRight: '.25rem' }}>
+              {t('common.save') === 'حفظ' ? 'حذف؟' : 'Delete?'}
             </span>
             <ActionBtn
               color="var(--danger)"
               onClick={onDeleteConfirm}
               disabled={isDeletePending}
             >
-              {isDeletePending ? <Spinner size={12} /> : 'تأكيد'}
+              {isDeletePending ? <Spinner size={12} /> : (t('common.save') === 'حفظ' ? 'تأكيد' : 'Confirm')}
             </ActionBtn>
             <ActionBtn color="var(--muted)" onClick={onDeleteCancel}>
-              إلغاء
+              {t('common.cancel')}
             </ActionBtn>
           </div>
         ) : isEditing ? (
@@ -435,8 +415,6 @@ function GradeRow({
     </HoverRow>
   )
 }
-
-// ─── Small action button ───────────────────────────────────────────────────────
 
 function ActionBtn({
   children,

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { DEPT_COLORS, PREFERRED_DEPT_OPTIONS } from '@/shared/constants'
 import { Card, CardTitle } from '@/shared/components/ui/Card'
 import { Spinner } from '@/shared/components/ui/Spinner'
@@ -12,6 +13,19 @@ export function PreferredDepartmentSelector({
   isPending: boolean
   onSelect: (department: PreferredDepartment) => void
 }) {
+  const { t } = useTranslation()
+
+  const getDeptOptionLabel = (val: string) => {
+    if (val === 'General') return t('common.general')
+    const mapping: Record<string, string> = {
+      IS: t('common.general') === 'عام' ? 'IS — نظم المعلومات' : 'IS — Information Systems',
+      IT: t('common.general') === 'عام' ? 'IT — تكنولوجيا المعلومات' : 'IT — Information Technology',
+      AI: t('common.general') === 'عام' ? 'AI — الذكاء الاصطناعي' : 'AI — Artificial Intelligence',
+      CS: t('common.general') === 'عام' ? 'CS — علوم الحاسب' : 'CS — Computer Science',
+    }
+    return mapping[val] || val
+  }
+
   return (
     <Card>
       <div
@@ -24,16 +38,16 @@ export function PreferredDepartmentSelector({
         }}
       >
         <div>
-          <CardTitle>القسم المفضل</CardTitle>
+          <CardTitle>{t('dashboard.preferredDept')}</CardTitle>
           <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>
-            يؤثر الاختيار على توصيات الخطة الأكاديمية.
+            {t('dashboard.preferredDeptDesc')}
           </p>
         </div>
         {isPending && <Spinner size={16} />}
       </div>
 
       <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-        {PREFERRED_DEPT_OPTIONS.map(({ value, label }) => {
+        {PREFERRED_DEPT_OPTIONS.map(({ value }) => {
           const color = DEPT_COLORS[value as keyof typeof DEPT_COLORS] ?? 'var(--accent)'
           const active = current === value
 
@@ -56,7 +70,7 @@ export function PreferredDepartmentSelector({
                 opacity: isPending ? 0.65 : 1,
               }}
             >
-              {label}
+              {getDeptOptionLabel(value)}
             </button>
           )
         })}

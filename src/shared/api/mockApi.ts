@@ -478,6 +478,35 @@ export const mockAuthApi = {
       },
     })
   },
+
+  async loginGuest(): Promise<LoginResponse> {
+    const guestId = 'mock-guest-session'
+    const now = new Date().toISOString()
+    const users = readUsers()
+
+    let guest = users.find((u) => u._id === guestId)
+    if (!guest) {
+      guest = {
+        _id: guestId,
+        firstName: 'زائر',
+        lastName: 'المنصة',
+        username: 'guest',
+        email: 'guest@portal.local',
+        password: '',
+        role: 'guest',
+        status: 'active',
+        createdAt: now,
+        updatedAt: now,
+      }
+      users.push(guest)
+      writeUsers(users)
+    }
+
+    return delay({
+      token: createToken(guest._id),
+      user: sanitizeUser(guest),
+    })
+  },
 }
 
 export const mockUserApi = {

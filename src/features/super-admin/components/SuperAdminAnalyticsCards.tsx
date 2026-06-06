@@ -1,11 +1,13 @@
+import { useTranslation } from 'react-i18next'
 import type { SuperAdminAnalytics } from '@/shared/types'
 
 export function SuperAdminAnalyticsCards({ analytics }: { analytics: SuperAdminAnalytics }) {
+  const { t } = useTranslation()
   const cards = [
-    { label: 'إجمالي الطلاب', value: analytics.totalStudents, color: 'var(--accent)' },
-    { label: 'إجمالي المشرفين', value: analytics.totalAdmins, color: 'var(--accent2)' },
-    { label: 'إجمالي المواد', value: analytics.totalCourses, color: 'var(--gold)' },
-    { label: 'الحسابات النشطة', value: analytics.activeAccounts, color: 'var(--success)' },
+    { label: t('admin.analytics.totalStudents') || t('admin.studentName'), value: analytics.totalStudents, color: 'var(--accent)' },
+    { label: t('super.totalAdmins'), value: analytics.totalAdmins, color: 'var(--accent2)' },
+    { label: t('super.totalCourses'), value: analytics.totalCourses, color: 'var(--gold)' },
+    { label: t('super.activeAccounts'), value: analytics.activeAccounts, color: 'var(--success)' },
   ]
 
   return (
@@ -16,7 +18,7 @@ export function SuperAdminAnalyticsCards({ analytics }: { analytics: SuperAdminA
         gap: '1rem',
         marginBottom: '1.25rem',
       }}
-      aria-label="إحصائيات النظام"
+      aria-label={t('super.systemStats')}
     >
       {cards.map((card) => (
         <div

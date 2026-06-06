@@ -1,13 +1,38 @@
 import type { ReactNode } from 'react'
-import { DEPT_COLORS, DEPT_NAMES, ROLE_LABELS, YEAR_NAMES } from '@/shared/constants'
+import { useTranslation } from 'react-i18next'
+import { DEPT_COLORS } from '@/shared/constants'
 import type { Department, User } from '@/shared/types'
 
 export function ProfileOverview({ user }: { user: User }) {
+  const { t } = useTranslation()
   const dept = user.department ?? 'General'
   const deptColor = DEPT_COLORS[dept as Department] ?? 'var(--accent)'
-  const deptLabel = DEPT_NAMES[dept as Department] ?? dept
-  const yearLabel = YEAR_NAMES[user.academicYear ?? 0]
   const isStudent = !user.role || user.role === 'student'
+
+  const getDeptLabel = (d: string) => {
+    if (d === 'General') return t('common.general')
+    const mapping: Record<string, string> = {
+      IS: t('common.general') === 'عام' ? 'نظم المعلومات' : 'Information Systems',
+      IT: t('common.general') === 'عام' ? 'تكنولوجيا المعلومات' : 'Information Technology',
+      AI: t('common.general') === 'عام' ? 'الذكاء الاصطناعي' : 'Artificial Intelligence',
+      CS: t('common.general') === 'عام' ? 'علوم الحاسب' : 'Computer Science',
+    }
+    return mapping[d] || d
+  }
+
+  const getYearLabel = (y: number) => {
+    if (y >= 1 && y <= 4) return t(`login.year${y}`)
+    return t('common.student')
+  }
+
+  const getRoleLabel = () => {
+    if (!user?.role) return t('common.student')
+    if (user.role === 'guest') return t('sidebar.guestPortal')
+    if (user.role === 'student') return t('common.student')
+    if (user.role === 'admin') return t('sidebar.adminDashboard')
+    if (user.role === 'super_admin') return t('sidebar.superAdmin')
+    return user.role
+  }
 
   return (
     <section
@@ -56,15 +81,17 @@ export function ProfileOverview({ user }: { user: User }) {
                 marginBottom: '.35rem',
               }}
             >
-              أهلاً، {user.firstName} {user.lastName}
+              {t('dashboard.hello', { name: `${user.firstName} ${user.lastName}` })}
             </h2>
             <div style={{ color: 'var(--muted2)', fontSize: '.86rem' }}>
-              {isStudent ? `${yearLabel ?? 'طالب'} · ${user.studentId ?? 'طالب تجريبي'}` : ROLE_LABELS[user.role] ?? user.role}
+              {isStudent
+                ? `${getYearLabel(user.academicYear ?? 0)} · ${user.studentId ?? t('common.student')}`
+                : getRoleLabel()}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-            {isStudent && <ProfileBadge color={deptColor}>قسم {dept} — {deptLabel}</ProfileBadge>}
+            {isStudent && <ProfileBadge color={deptColor}>{t('login.department').replace(' *', '')}: {getDeptLabel(dept)}</ProfileBadge>}
             {user.email && <ProfileBadge color="var(--muted2)">{user.email}</ProfileBadge>}
           </div>
         </div>

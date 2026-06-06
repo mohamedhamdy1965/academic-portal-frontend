@@ -15,17 +15,28 @@ const AIPlanPage     = lazy(() => import('@/features/ai-plan/AIPlanPage'))
 const AdminDashboardPage = lazy(() => import('@/features/admin/AdminDashboardPage'))
 const StudentDetailsPage = lazy(() => import('@/features/admin/StudentDetailsPage'))
 const SuperAdminDashboardPage = lazy(() => import('@/features/super-admin/SuperAdminDashboardPage'))
+const GuestDashboardPage = lazy(() => import('@/features/guest/GuestDashboardPage'))
 
 // ─── Route guards ──────────────────────────────────────────────────────────────
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  const { isAuthenticated, user } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.role === 'guest') return <Navigate to="/guest" replace />
+  return <>{children}</>
+}
+
+function GuestRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, user } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.role !== 'guest') return <Navigate to="/dashboard" replace />
+  return <>{children}</>
 }
 
 function PublicRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
-  return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />
+  const { isAuthenticated, user } = useAuth()
+  if (!isAuthenticated) return <>{children}</>
+  return <Navigate to={user?.role === 'guest' ? '/guest' : '/dashboard'} replace />
 }
 
 // ─── Router ────────────────────────────────────────────────────────────────────
@@ -62,6 +73,17 @@ export function AppRouter() {
             <Route path="admin"      element={<AdminDashboardPage />} />
             <Route path="admin/students/:studentId" element={<StudentDetailsPage />} />
             <Route path="super-admin" element={<SuperAdminDashboardPage />} />
+          </Route>
+
+          <Route
+            path="/guest"
+            element={
+              <GuestRoute>
+                <DashboardLayout />
+              </GuestRoute>
+            }
+          >
+            <Route index element={<GuestDashboardPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

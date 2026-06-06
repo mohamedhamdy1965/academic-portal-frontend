@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react'
-
+import { useTranslation } from 'react-i18next'
 import { useProfile } from '@/shared/hooks/useProfile'
 import { COURSES_RAW } from '@/shared/constants/curriculum'
-import { DEPT_NAMES, GROUP_NAMES } from '@/shared/constants'
-import { Table, HoverRow, TABLE_TD, TABLE_TH } from '@/shared/components/ui/Table'
+import { Table, HoverRow, TABLE_TD } from '@/shared/components/ui/Table'
 import type { Department, CurriculumCourse, CourseGroup } from '@/shared/types'
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -18,7 +17,6 @@ const DEPT_COLOR_MAP: Record<Department, string> = {
 }
 
 // The ordered groups to display — determines section order in the curriculum view.
-// General groups first, then department-specific groups derived from the selected dept.
 const BASE_GROUPS: CourseGroup[] = [
   'FACULTY_CORE',
   'UNIVERSITY_MANDATORY',
@@ -28,11 +26,6 @@ const BASE_GROUPS: CourseGroup[] = [
 
 // ─── Pure helpers ──────────────────────────────────────────────────────────────
 
-/**
- * Groups curriculum courses into ordered sections for display.
- * Pure function — no side effects, no Set mutation inside render.
- * Returns only sections that have at least one course.
- */
 function groupCourses(
   courses: CurriculumCourse[],
   dept: Department,
@@ -62,18 +55,10 @@ function groupCourses(
   return result
 }
 
-function semLabel(sem: CurriculumCourse['sem']): string {
-  if (sem === '1') return 'الأول'
-  if (sem === '2') return 'الثاني'
-  return 'اختياري'
-}
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CurriculumPage() {
-  // Use profile to get user's dept for default tab and to mark passed courses.
-  // The page is still fully functional even before the profile loads —
-  // it defaults to 'IS' and shows no "passed" indicators until data arrives.
+  const { t } = useTranslation()
   const { data: profile } = useProfile()
 
   const [dept, setDept] = useState<Department>(
@@ -90,21 +75,28 @@ export default function CurriculumPage() {
     [profile?.enrolledCourses],
   )
 
-  // groupCourses is a pure derivation — memoized on dept change.
-  // No loading state needed because COURSES_RAW is synchronous static data.
   const sections = useMemo(
     () => groupCourses(COURSES_RAW, dept),
     [dept],
   )
 
+  const getDeptLabel = (d: string) => {
+    const mapping: Record<string, string> = {
+      IS: t('common.general') === 'عام' ? 'نظم المعلومات' : 'Information Systems',
+      IT: t('common.general') === 'عام' ? 'تكنولوجيا المعلومات' : 'Information Technology',
+      AI: t('common.general') === 'عام' ? 'الذكاء الاصطناعي' : 'Artificial Intelligence',
+      CS: t('common.general') === 'عام' ? 'علوم الحاسب' : 'Computer Science',
+    }
+    return mapping[d] || d
+  }
+
   return (
     <div className="animate-in">
-
       {/* Dept tabs */}
       <div
         style={{ display: 'flex', gap: '.65rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}
         role="tablist"
-        aria-label="اختر القسم"
+        aria-label={t('login.department').replace(' *', '')}
       >
         {DEPTS.map((d) => {
           const active = dept === d
@@ -129,7 +121,7 @@ export default function CurriculumPage() {
                 fontFamily: 'Cairo, sans-serif',
               }}
             >
-              {d} — {DEPT_NAMES[d]}
+              {d} — {getDeptLabel(d)}
             </button>
           )
         })}
@@ -159,7 +151,26 @@ interface SectionProps {
 }
 
 function CurriculumSection({ group, courses, isCore, passedCodes }: SectionProps) {
+  const { t } = useTranslation()
   const totalCredits = courses.reduce((sum, c) => sum + c.credits, 0)
+
+  const getGroupLabel = (g: string) => {
+    const mapping: Record<string, string> = {
+      FACULTY_CORE: t('common.general') === 'عام' ? 'متطلبات الكلية الإجبارية' : 'Faculty Mandatory Requirements',
+      UNIVERSITY_MANDATORY: t('common.general') === 'عام' ? 'متطلبات الجامعة الإجبارية' : 'University Mandatory Requirements',
+      FACULTY_CHOOSE_3: t('common.general') === 'عام' ? 'اختياري من متطلبات الكلية' : 'Faculty Elective Requirements (Choose 3)',
+      UNIVERSITY_CHOOSE_2: t('common.general') === 'عام' ? 'اختياري من متطلبات الجامعة' : 'University Elective Requirements (Choose 2)',
+      AI_CORE: t('common.general') === 'عام' ? 'متطلبات قسم AI الإجبارية' : 'AI Core Requirements',
+      AI_ELECTIVE: t('common.general') === 'عام' ? 'اختيارية قسم AI' : 'AI Elective Requirements',
+      CS_CORE: t('common.general') === 'عام' ? 'متطلبات قسم CS الإجبارية' : 'CS Core Requirements',
+      CS_ELECTIVE: t('common.general') === 'عام' ? 'اختيارية قسم CS' : 'CS Elective Requirements',
+      IS_CORE: t('common.general') === 'عام' ? 'متطلبات قسم IS الإجبارية' : 'IS Core Requirements',
+      IS_ELECTIVE: t('common.general') === 'عام' ? 'اختيارية قسم IS' : 'IS Elective Requirements',
+      IT_CORE: t('common.general') === 'عام' ? 'متطلبات قسم IT الإجبارية' : 'IT Core Requirements',
+      IT_ELECTIVE: t('common.general') === 'عام' ? 'اختيارية قسم IT' : 'IT Elective Requirements',
+    }
+    return mapping[g] || g
+  }
 
   return (
     <div style={{ marginBottom: '2rem' }}>
@@ -185,17 +196,17 @@ function CurriculumSection({ group, courses, isCore, passedCodes }: SectionProps
             whiteSpace: 'nowrap',
           }}
         >
-          {GROUP_NAMES[group] ?? group}
+          {getGroupLabel(group)}
         </span>
         <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         <span style={{ fontSize: '.78rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-          {courses.length} مادة · {totalCredits} ساعة
+          {t('guest.courseCount', { count: courses.length })} · {totalCredits} {t('dashboard.credits') === 'الساعات' ? 'ساعة' : 'Credits'}
         </span>
       </div>
 
       {/* Section table */}
       <Table
-        headers={['الكود', 'اسم المادة', 'الساعات', 'الفصل', 'المتطلب السابق', 'النوع', 'الحالة']}
+        headers={[t('dashboard.code'), t('dashboard.name'), t('dashboard.credits'), t('dashboard.status') === 'الحالة' ? 'الفصل' : 'Semester', t('guest.prereqs'), t('dashboard.status') === 'الحالة' ? 'النوع' : 'Type', t('dashboard.status')]}
       >
         {courses.map((course) => (
           <CurriculumRow
@@ -221,6 +232,14 @@ function CurriculumRow({
   isCore: boolean
   passed: boolean
 }) {
+  const { t } = useTranslation()
+
+  const semLabel = (sem: CurriculumCourse['sem']): string => {
+    if (sem === '1') return t('guest.sem1')
+    if (sem === '2') return t('guest.sem2')
+    return t('guest.semElective')
+  }
+
   return (
     <HoverRow>
       <td style={TABLE_TD}>
@@ -279,7 +298,7 @@ function CurriculumRow({
             color: isCore ? '#fca5a5' : '#86efac',
           }}
         >
-          {isCore ? 'إجباري' : 'اختياري'}
+          {isCore ? t('guest.mandatory') : t('guest.elective')}
         </span>
       </td>
 
@@ -287,9 +306,9 @@ function CurriculumRow({
         {passed && (
           <span
             style={{ color: 'var(--success)', fontWeight: 700, fontSize: '.82rem' }}
-            title="مجتاز"
+            title={t('guest.passedTitle')}
           >
-            ✓ مجتاز
+            {t('guest.passed')}
           </span>
         )}
       </td>

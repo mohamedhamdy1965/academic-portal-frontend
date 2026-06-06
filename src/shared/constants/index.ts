@@ -34,6 +34,7 @@ export const DEPT_OPTIONS = ['IS', 'IT', 'AI', 'CS'] as const
 export const ROLE_LABELS: Record<string, string> = {
   admin: 'مشرف',
   super_admin: 'مشرف عام',
+  guest: 'زائر',
 }
 
 export const GROUP_NAMES: Record<CourseGroup, string> = {

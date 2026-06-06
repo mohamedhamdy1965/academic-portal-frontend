@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/providers/AuthProvider'
 import { toast } from '@/providers/ToastProvider'
 import { authApi } from '@/shared/api/services'
@@ -11,6 +12,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { Input, Select, Field } from '@/shared/components/ui/FormPrimitives'
 import { Alert } from '@/shared/components/ui/Card'
 import fciBranding from '@/assets/fci-branding.png'
+
+import { LanguageSwitcher } from '@/shared/components/ui/LanguageSwitcher'
 
 // ─── Schemas ───────────────────────────────────────────────────────────────────
 
@@ -41,10 +44,13 @@ type RegisterData = z.infer<typeof registerSchema>
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
+  const { i18n } = useTranslation()
   const [tab, setTab]       = useState<'login' | 'register'>('login')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
+
+  const isRtl = i18n.dir() === 'rtl'
 
   return (
     <div
@@ -59,6 +65,18 @@ export default function LoginPage() {
       }}
     >
       <AnimatedBg />
+
+      <div
+        style={{
+          position: 'absolute',
+          top: '1.5rem',
+          right: isRtl ? 'auto' : '1.5rem',
+          left: isRtl ? '1.5rem' : 'auto',
+          zIndex: 10,
+        }}
+      >
+        <LanguageSwitcher />
+      </div>
 
       <div
         style={{
@@ -139,6 +157,8 @@ function Banner() {
 }
 
 function FormCard({ tab, setTab }: { tab: 'login' | 'register'; setTab: (t: 'login' | 'register') => void }) {
+  const { t } = useTranslation()
+
   return (
     <div
       style={{
@@ -165,26 +185,26 @@ function FormCard({ tab, setTab }: { tab: 'login' | 'register'; setTab: (t: 'log
           border: '1px solid rgba(255,255,255,.06)',
         }}
       >
-        {(['login', 'register'] as const).map((t, i) => (
+        {(['login', 'register'] as const).map((tVal, i) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tVal}
+            onClick={() => setTab(tVal)}
             style={{
               flex: 1,
               padding: '.65rem',
               border: 'none',
               borderRadius: 9,
               cursor: 'pointer',
-              background: tab === t ? 'linear-gradient(135deg, var(--accent), #1d4ed8)' : 'transparent',
-              color: tab === t ? '#fff' : 'var(--muted)',
+              background: tab === tVal ? 'linear-gradient(135deg, var(--accent), #1d4ed8)' : 'transparent',
+              color: tab === tVal ? '#fff' : 'var(--muted)',
               fontSize: '.92rem',
               fontWeight: 700,
               transition: 'all .25s',
-              boxShadow: tab === t ? '0 4px 15px rgba(59,130,246,.5)' : 'none',
+              boxShadow: tab === tVal ? '0 4px 15px rgba(59,130,246,.5)' : 'none',
               fontFamily: 'Cairo, sans-serif',
             }}
           >
-            {i === 0 ? 'تسجيل الدخول' : 'حساب جديد'}
+            {i === 0 ? t('login.title') : t('login.newAccount')}
           </button>
         ))}
       </div>
@@ -197,12 +217,19 @@ function FormCard({ tab, setTab }: { tab: 'login' | 'register'; setTab: (t: 'log
 // ─── Login Form ────────────────────────────────────────────────────────────────
 
 function LoginForm() {
+  const { t } = useTranslation()
   const { login } = useAuth()
   const navigate  = useNavigate()
   const [serverError, setServerError] = useState('')
+  const [guestLoading, setGuestLoading] = useState(false)
+
+  const schema = useMemo(() => z.object({
+    email:    z.string().email(t('login.emailError')),
+    password: z.string().min(6, t('login.passwordError')),
+  }), [t])
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(schema),
   })
 
   const onSubmit = async (data: LoginData) => {
@@ -210,10 +237,25 @@ function LoginForm() {
     try {
       const res = await authApi.login(data.email, data.password)
       login(res.token, res.user)
-      toast('مرحباً بك! 👋', 'success')
+      toast(t('common.welcome'), 'success')
       navigate('/dashboard')
     } catch (err) {
       setServerError((err as { message: string }).message)
+    }
+  }
+
+  const handleGuestLogin = async () => {
+    setServerError('')
+    setGuestLoading(true)
+    try {
+      const res = await authApi.loginGuest()
+      login(res.token, res.user)
+      toast(t('common.welcomeGuest'), 'success')
+      navigate('/guest')
+    } catch (err) {
+      setServerError((err as { message: string }).message)
+    } finally {
+      setGuestLoading(false)
     }
   }
 
@@ -230,7 +272,7 @@ function LoginForm() {
         />
       )}
 
-      <Field label="البريد الإلكتروني">
+      <Field label={t('login.email')}>
         <Input
           type="email"
           placeholder="ahmed@example.com"
@@ -239,7 +281,7 @@ function LoginForm() {
         />
       </Field>
 
-      <Field label="كلمة المرور">
+      <Field label={t('login.password')}>
         <Input
           type="password"
           placeholder="••••••••"
@@ -249,7 +291,27 @@ function LoginForm() {
       </Field>
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting}>
-        تسجيل الدخول
+        {t('login.loginBtn')}
+      </Button>
+
+      <div style={{ position: 'relative', textAlign: 'center', margin: '1.2rem 0' }}>
+        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: 'var(--border)' }} />
+        <span style={{ position: 'relative', background: 'rgba(10,14,24,.96)', padding: '0 .75rem', fontSize: '.78rem', color: 'var(--muted)' }}>{t('login.or')}</span>
+      </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="lg"
+        fullWidth
+        loading={guestLoading}
+        onClick={handleGuestLogin}
+        style={{
+          border: '1px solid rgba(59,130,246,.2)',
+          background: 'rgba(59,130,246,.04)',
+        }}
+      >
+        🌐 {t('login.continueAsGuest')}
       </Button>
     </form>
   )
@@ -258,6 +320,7 @@ function LoginForm() {
 // ─── Register Form ─────────────────────────────────────────────────────────────
 
 function DemoAccounts({ onSelect }: { onSelect: (email: string) => void }) {
+  const { t } = useTranslation()
   const accounts = [
     { label: 'Student', email: 'student@demo.com' },
     { label: 'Admin', email: 'admin@demo.com' },
@@ -282,7 +345,7 @@ function DemoAccounts({ onSelect }: { onSelect: (email: string) => void }) {
           marginBottom: '.55rem',
         }}
       >
-        Demo accounts
+        {t('login.demoAccounts')}
       </div>
       <div style={{ display: 'flex', gap: '.45rem', flexWrap: 'wrap' }}>
         {accounts.map((account) => (
@@ -310,11 +373,24 @@ function DemoAccounts({ onSelect }: { onSelect: (email: string) => void }) {
 }
 
 function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useTranslation()
   const [serverError, setServerError] = useState('')
   const [serverSuccess, setServerSuccess] = useState('')
 
+  const schema = useMemo(() => z.object({
+    firstName:           z.string().min(2, t('login.firstNameError')),
+    lastName:            z.string().min(2, t('login.lastNameError')),
+    username:            z.string().min(3, t('login.usernameError')),
+    email:               z.string().email(t('login.emailError')),
+    password:            z.string().min(6, t('login.passwordError')),
+    department:          z.string().min(1, t('login.departmentError')),
+    academicYear:        z.string().optional(),
+    preferredDepartment: z.enum(PREFERRED_DEPT_VALUES).optional(),
+    phoneNumber:         z.string().optional(),
+  }), [t])
+
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(schema),
     defaultValues: { preferredDepartment: 'General' },
   })
 
@@ -326,7 +402,7 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
         ...data,
         academicYear: data.academicYear ? Number(data.academicYear) : undefined,
       })
-      setServerSuccess('تم إنشاء الحساب بنجاح! 🎉')
+      setServerSuccess(t('login.successRegister'))
       setTimeout(onSuccess, 1500)
     } catch (err) {
       setServerError((err as { message: string }).message)
@@ -339,62 +415,62 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
       {serverSuccess && <Alert type="success">{serverSuccess}</Alert>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.85rem' }}>
-        <Field label="الاسم الأول *">
+        <Field label={t('login.firstName')}>
           <Input placeholder="Ahmed" error={errors.firstName?.message} {...register('firstName')} />
         </Field>
-        <Field label="الاسم الأخير *">
+        <Field label={t('login.lastName')}>
           <Input placeholder="Hassan" error={errors.lastName?.message} {...register('lastName')} />
         </Field>
       </div>
 
-      <Field label="اسم المستخدم *">
+      <Field label={t('login.username')}>
         <Input placeholder="ahmed.hassan" error={errors.username?.message} {...register('username')} />
       </Field>
 
-      <Field label="البريد الإلكتروني *">
+      <Field label={t('login.email')}>
         <Input type="email" placeholder="ahmed@example.com" error={errors.email?.message} {...register('email')} />
       </Field>
 
-      <Field label="كلمة المرور *">
-        <Input type="password" placeholder="6 أحرف على الأقل" error={errors.password?.message} {...register('password')} />
+      <Field label={t('login.password')}>
+        <Input type="password" placeholder={t('login.passwordError')} error={errors.password?.message} {...register('password')} />
       </Field>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.85rem' }}>
-        <Field label="السنة الدراسية">
+        <Field label={t('login.academicYear')}>
           <Select {...register('academicYear')}>
-            <option value="">اختر</option>
-            {['الأولى','الثانية','الثالثة','الرابعة'].map((y, i) => (
+            <option value="">{t('login.select')}</option>
+            {[t('login.year1'), t('login.year2'), t('login.year3'), t('login.year4')].map((y, i) => (
               <option key={i} value={i + 1}>{y}</option>
             ))}
           </Select>
         </Field>
-        <Field label="القسم *">
+        <Field label={t('login.department')}>
           <Select error={errors.department?.message} {...register('department')}>
-            <option value="">اختر</option>
-            <option value="IS">IS — نظم المعلومات</option>
-            <option value="IT">IT — تكنولوجيا المعلومات</option>
-            <option value="AI">AI — الذكاء الاصطناعي</option>
-            <option value="CS">CS — علوم الحاسب</option>
+            <option value="">{t('login.select')}</option>
+            <option value="IS">IS — {t('common.general') === 'عام' ? 'نظم المعلومات' : 'Information Systems'}</option>
+            <option value="IT">IT — {t('common.general') === 'عام' ? 'تكنولوجيا المعلومات' : 'Information Technology'}</option>
+            <option value="AI">AI — {t('common.general') === 'عام' ? 'الذكاء الاصطناعي' : 'Artificial Intelligence'}</option>
+            <option value="CS">CS — {t('common.general') === 'عام' ? 'علوم الحاسب' : 'Computer Science'}</option>
           </Select>
         </Field>
       </div>
 
-      <Field label="القسم المفضل">
+      <Field label={t('login.preferredDepartment')}>
         <Select {...register('preferredDepartment')}>
-          <option value="General">عام</option>
-          <option value="IS">IS — نظم المعلومات</option>
-          <option value="IT">IT — تكنولوجيا المعلومات</option>
-          <option value="AI">AI — الذكاء الاصطناعي</option>
-          <option value="CS">CS — علوم الحاسب</option>
+          <option value="General">{t('common.general')}</option>
+          <option value="IS">IS — {t('common.general') === 'عام' ? 'نظم المعلومات' : 'Information Systems'}</option>
+          <option value="IT">IT — {t('common.general') === 'عام' ? 'تكنولوجيا المعلومات' : 'Information Technology'}</option>
+          <option value="AI">AI — {t('common.general') === 'عام' ? 'الذكاء الاصطناعي' : 'Artificial Intelligence'}</option>
+          <option value="CS">CS — {t('common.general') === 'عام' ? 'علوم الحاسب' : 'Computer Science'}</option>
         </Select>
       </Field>
 
-      <Field label="رقم الهاتف">
+      <Field label={t('login.phoneNumber')}>
         <Input type="tel" placeholder="+201012345678" {...register('phoneNumber')} />
       </Field>
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} style={{ marginTop: '.25rem' }}>
-        إنشاء الحساب
+        {t('login.createAccount')}
       </Button>
     </form>
   )

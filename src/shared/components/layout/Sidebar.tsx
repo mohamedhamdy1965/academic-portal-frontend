@@ -1,17 +1,17 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/providers/AuthProvider'
 import { toast } from '@/providers/ToastProvider'
-import { ROLE_LABELS } from '@/shared/constants'
 
 const NAV_ITEMS = [
-  { to: '/dashboard',            icon: '🏠', label: 'لوحة التحكم',     group: 'main'  },
-  { to: '/dashboard/curriculum', icon: '📚', label: 'اللائحة الدراسية', group: 'main'  },
-  { to: '/dashboard/results',    icon: '📊', label: 'النتائج والدرجات', group: 'main'  },
-  { to: '/dashboard/predictor',  icon: '🔮', label: 'توقع الدرجة',      group: 'smart' },
-  { to: '/dashboard/aiplan',     icon: '🤖', label: 'الخطة الأكاديمية', group: 'smart' },
-  { to: '/dashboard/admin',      icon: '▦', label: 'لوحة الإدارة', group: 'admin' },
-  { to: '/dashboard/super-admin', icon: '🛡️', label: 'الإشراف العام', group: 'super' },
+  { to: '/dashboard',            icon: '🏠', labelKey: 'sidebar.dashboard',     group: 'main'  },
+  { to: '/dashboard/curriculum', icon: '📚', labelKey: 'sidebar.curriculum', group: 'main'  },
+  { to: '/dashboard/results',    icon: '📊', labelKey: 'sidebar.results', group: 'main'  },
+  { to: '/dashboard/predictor',  icon: '🔮', labelKey: 'sidebar.gradePredictor',      group: 'smart' },
+  { to: '/dashboard/aiplan',     icon: '🤖', labelKey: 'sidebar.academicPlanner', group: 'smart' },
+  { to: '/dashboard/admin',      icon: '▦', labelKey: 'sidebar.adminDashboard', group: 'admin' },
+  { to: '/dashboard/super-admin', icon: '🛡️', labelKey: 'sidebar.superAdminDashboard', group: 'super' },
 ] as const
 
 interface SidebarProps {
@@ -23,10 +23,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { user, logout } = useAuth()
   const navigate         = useNavigate()
   const { pathname }     = useLocation()
+  const { t, i18n }      = useTranslation()
+
+  const isRtl = i18n.dir() === 'rtl'
 
   const handleLogout = () => {
     logout()
-    toast('تم تسجيل الخروج', 'info')
+    toast(t('common.logout'), 'info')
     navigate('/login')
   }
 
@@ -36,6 +39,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   const isStudent = !user?.role || user.role === 'student'
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
+
+  const getRoleLabel = () => {
+    if (!user?.role) return t('common.student')
+    if (user.role === 'guest') return t('sidebar.guestPortal')
+    if (user.role === 'student') return t('common.student')
+    if (user.role === 'admin') return t('sidebar.adminDashboard')
+    if (user.role === 'super_admin') return t('sidebar.superAdmin')
+    return user.role
+  }
 
   return (
     <>
@@ -54,20 +66,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       <aside
-        aria-label="القائمة الجانبية"
+        aria-label={t('sidebar.mainNav')}
         style={{
           width: 'var(--sidebar-w)',
           minHeight: '100vh',
           background: 'var(--surface)',
-          borderLeft: '1px solid var(--border)',
+          borderLeft: isRtl ? '1px solid var(--border)' : 'none',
+          borderRight: isRtl ? 'none' : '1px solid var(--border)',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
-          right: 0,
+          right: isRtl ? 0 : 'auto',
+          left: isRtl ? 'auto' : 0,
           top: 0,
           zIndex: 50,
           transition: 'transform .3s ease',
-          transform: open ? 'translateX(0)' : undefined,
+          transform: open
+            ? 'translateX(0)'
+            : (isRtl ? 'translateX(100%)' : 'translateX(-100%)'),
         }}
       >
         {/* Logo */}
@@ -103,7 +119,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               lineHeight: 1.35,
             }}
           >
-            جامعة العاصمة
+            {t('sidebar.mainHeader')}
             <span
               style={{
                 display: 'block',
@@ -117,56 +133,69 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: '.75rem 0', overflowY: 'auto' }} aria-label="التنقل">
-          <SectionLabel>القائمة الرئيسية</SectionLabel>
-          {NAV_ITEMS.filter((n) => n.group === 'main').map((n) => (
-            <NavItem
-              key={n.to}
-              item={n}
-              active={pathname === n.to}
-              onClick={() => { navigate(n.to); onClose() }}
-            />
-          ))}
-
-          {isStudent && (
+        <nav style={{ flex: 1, padding: '.75rem 0', overflowY: 'auto' }} aria-label={t('sidebar.mainNav')}>
+          {user?.role === 'guest' ? (
             <>
-              <SectionLabel>أدوات ذكية</SectionLabel>
-              {NAV_ITEMS.filter((n) => n.group === 'smart').map((n) => (
+              <SectionLabel>{t('sidebar.guestPortal')}</SectionLabel>
+              <NavItem
+                item={{ icon: '🌐', label: t('sidebar.discoveryPortal') }}
+                active={pathname === '/guest'}
+                onClick={() => { navigate('/guest'); onClose() }}
+              />
+            </>
+          ) : (
+            <>
+              <SectionLabel>{t('sidebar.mainNav')}</SectionLabel>
+              {NAV_ITEMS.filter((n) => n.group === 'main').map((n) => (
                 <NavItem
                   key={n.to}
-                  item={n}
+                  item={{ icon: n.icon, label: t(n.labelKey) }}
                   active={pathname === n.to}
                   onClick={() => { navigate(n.to); onClose() }}
                 />
               ))}
-            </>
-          )}
 
-          {isAdmin && (
-            <>
-              <SectionLabel>الإدارة</SectionLabel>
-              {NAV_ITEMS.filter((n) => n.group === 'admin').map((n) => (
-                <NavItem
-                  key={n.to}
-                  item={n}
-                  active={pathname === n.to || pathname.startsWith(`${n.to}/`)}
-                  onClick={() => { navigate(n.to); onClose() }}
-                />
-              ))}
-            </>
-          )}
+              {isStudent && (
+                <>
+                  <SectionLabel>{t('sidebar.smartNav') || t('sidebar.smartTools')}</SectionLabel>
+                  {NAV_ITEMS.filter((n) => n.group === 'smart').map((n) => (
+                    <NavItem
+                      key={n.to}
+                      item={{ icon: n.icon, label: t(n.labelKey) }}
+                      active={pathname === n.to}
+                      onClick={() => { navigate(n.to); onClose() }}
+                    />
+                  ))}
+                </>
+              )}
 
-          {user?.role === 'super_admin' && (
-            <>
-              <SectionLabel>الإشراف العام</SectionLabel>
-              {NAV_ITEMS.filter((n) => n.group === 'super').map((n) => (
-                <NavItem
-                  key={n.to}
-                  item={n}
-                  active={pathname === n.to || pathname.startsWith(`${n.to}/`)}
-                  onClick={() => { navigate(n.to); onClose() }}
-                />
-              ))}
+              {isAdmin && (
+                <>
+                  <SectionLabel>{t('sidebar.administration')}</SectionLabel>
+                  {NAV_ITEMS.filter((n) => n.group === 'admin').map((n) => (
+                    <NavItem
+                      key={n.to}
+                      item={{ icon: n.icon, label: t(n.labelKey) }}
+                      active={pathname === n.to || pathname.startsWith(`${n.to}/`)}
+                      onClick={() => { navigate(n.to); onClose() }}
+                    />
+                  ))}
+                </>
+              )}
+
+              {user?.role === 'super_admin' && (
+                <>
+                  <SectionLabel>{t('sidebar.superAdmin')}</SectionLabel>
+                  {NAV_ITEMS.filter((n) => n.group === 'super').map((n) => (
+                    <NavItem
+                      key={n.to}
+                      item={{ icon: n.icon, label: t(n.labelKey) }}
+                      active={pathname === n.to || pathname.startsWith(`${n.to}/`)}
+                      onClick={() => { navigate(n.to); onClose() }}
+                    />
+                  ))}
+                </>
+              )}
             </>
           )}
         </nav>
@@ -206,7 +235,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               <div style={{ fontSize: '.72rem', color: 'var(--muted)' }}>
                 {!isStudent ? (
                   <span style={{ color: 'var(--gold)' }}>
-                    {ROLE_LABELS[user?.role ?? ''] ?? user?.role}
+                    {getRoleLabel()}
                   </span>
                 ) : (
                   user?.studentId
@@ -215,8 +244,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </div>
             <button
               onClick={handleLogout}
-              title="تسجيل الخروج"
-              aria-label="تسجيل الخروج"
+              title={t('common.logout')}
+              aria-label={t('common.logout')}
               style={{
                 background: 'none',
                 border: 'none',

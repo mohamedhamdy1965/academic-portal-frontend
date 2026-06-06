@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { GRADUATION_HOURS } from '@/shared/constants'
 import { Card, CardTitle } from '@/shared/components/ui/Card'
 
@@ -16,9 +17,11 @@ export function GraduationProgressSection({
   passedCount,
   failedCount,
 }: GraduationProgressSectionProps) {
+  const { t } = useTranslation()
+
   return (
     <Card>
-      <CardTitle>تقدم التخرج</CardTitle>
+      <CardTitle>{t('dashboard.graduationProgress')}</CardTitle>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem' }}>
         <div
           style={{
@@ -45,7 +48,7 @@ export function GraduationProgressSection({
             }}
           >
             <strong style={{ color: 'var(--accent)', fontSize: '1rem', lineHeight: 1 }}>{progress}%</strong>
-            <span style={{ color: 'var(--muted)', fontSize: '.62rem' }}>مكتمل</span>
+            <span style={{ color: 'var(--muted)', fontSize: '.62rem' }}>{t('dashboard.completed')}</span>
           </div>
         </div>
 
@@ -60,8 +63,8 @@ export function GraduationProgressSection({
               marginBottom: '.55rem',
             }}
           >
-            <span>{hours} / {GRADUATION_HOURS} ساعة</span>
-            <span>يتبقى {remaining} ساعة</span>
+            <span>{hours} / {GRADUATION_HOURS} {t('dashboard.credits') === 'الساعات' ? 'ساعة' : 'hours'}</span>
+            <span>{t('dashboard.remainingHours', { count: remaining })}</span>
           </div>
           <div style={{ height: 8, background: 'var(--border)', borderRadius: 5, overflow: 'hidden' }}>
             <div
@@ -82,8 +85,8 @@ export function GraduationProgressSection({
               marginTop: '1rem',
             }}
           >
-            <MiniProgressStat label="مواد ناجحة" value={passedCount} color="var(--success)" />
-            <MiniProgressStat label="مواد للمتابعة" value={failedCount} color={failedCount ? 'var(--danger)' : 'var(--muted)'} />
+            <MiniProgressStat label={t('dashboard.passedCourses')} value={passedCount} color="var(--success)" />
+            <MiniProgressStat label={t('dashboard.failedCourses')} value={failedCount} color={failedCount ? 'var(--danger)' : 'var(--muted)'} />
           </div>
         </div>
       </div>

@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type ReactNode, useMemo } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 
 import { aiApi } from '@/shared/api/services'
 import { gradeLabel, GRADE_BG, GRADE_TABLE } from '@/shared/constants'
@@ -12,14 +13,13 @@ import { Button } from '@/shared/components/ui/Button'
 import { Input, Field } from '@/shared/components/ui/FormPrimitives'
 import type { PredictorResult } from '@/shared/types'
 
-// ─── Form schema ───────────────────────────────────────────────────────────────
+// ─── Form schema helper ────────────────────────────────────────────────────────
+// The schema is built inside the component to support dynamic translations of validation messages.
 
-const predictorSchema = z.object({
-  cw: z.number({ invalid_type_error: 'يرجى إدخال رقم' }).min(0).max(25, 'الحد الأقصى 25'),
-  mt: z.number({ invalid_type_error: 'يرجى إدخال رقم' }).min(0).max(25, 'الحد الأقصى 25'),
-})
-
-type PredictorForm = z.infer<typeof predictorSchema>
+type PredictorForm = {
+  cw: number
+  mt: number
+}
 
 // ─── AI response parser ────────────────────────────────────────────────────────
 // Extracted from the component so it is named, pure, and easy to update
@@ -36,8 +36,10 @@ function parseAiResponse(
   rawHtml: string | undefined,
   cw: number,
   mt: number,
+  fallbackAdvice: string,
+  defaultAdvice: string,
 ): ParsedPrediction {
-  if (!rawHtml) return buildFallback(cw, mt)
+  if (!rawHtml) return buildFallback(cw, mt, fallbackAdvice)
 
   const tmp = document.createElement('div')
   tmp.innerHTML = rawHtml
@@ -46,7 +48,7 @@ function parseAiResponse(
   const finalMatch = text.match(/([\d.]+)\s*\/\s*50/)
   const totalMatch = text.match(/([\d.]+)\s*\/\s*100/)
 
-  if (!finalMatch || !totalMatch) return buildFallback(cw, mt)
+  if (!finalMatch || !totalMatch) return buildFallback(cw, mt, fallbackAdvice)
 
   const predF = parseFloat(finalMatch[1])
   const predT = parseFloat(totalMatch[1])
@@ -54,17 +56,17 @@ function parseAiResponse(
   const advice = text
     .replace(/Predicted.*?100/s, '')
     .replace(/AI Advice:?/i, '')
-    .trim() || 'أداؤك جيد، استمر في المراجعة المنتظمة.'
+    .trim() || defaultAdvice
 
   return { predF, predT, advice, isEstimate: false }
 }
 
-function buildFallback(cw: number, mt: number): ParsedPrediction {
+function buildFallback(cw: number, mt: number, fallbackAdvice: string): ParsedPrediction {
   const predF = Math.max(0, Math.min(50, (cw + mt) / 2 * 1.05 + (mt - cw) * 0.3))
   return {
     predF,
     predT: cw + mt + predF,
-    advice: 'هذا تقدير رياضي تقريبي — خادم الذكاء الاصطناعي غير متاح حالياً.',
+    advice: fallbackAdvice,
     isEstimate: true,
   }
 }
@@ -72,21 +74,30 @@ function buildFallback(cw: number, mt: number): ParsedPrediction {
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PredictorPage() {
+  const { t } = useTranslation()
   const [result, setResult] = useState<(PredictorResult & { isEstimate: boolean }) | null>(null)
+
+  const fallbackAdvice = t('predictor.fallbackAdvice')
+  const defaultAdvice = t('predictor.defaultAdvice')
 
   const predict = useMutation({
     mutationFn: ({ cw, mt }: PredictorForm) => aiApi.predict(cw, mt),
     onSuccess: (data, variables) => {
-      const parsed = parseAiResponse(data.result, variables.cw, variables.mt)
+      const parsed = parseAiResponse(data.result, variables.cw, variables.mt, fallbackAdvice, defaultAdvice)
       setResult({ ...variables, ...parsed })
     },
     onError: (_err, variables) => {
       // AI service is down — show fallback estimate instead of an error state.
       // The user still gets a useful result; the UI indicates it's an estimate.
-      const fallback = buildFallback(variables.cw, variables.mt)
+      const fallback = buildFallback(variables.cw, variables.mt, fallbackAdvice)
       setResult({ ...variables, ...fallback })
     },
   })
+
+  const predictorSchema = useMemo(() => z.object({
+    cw: z.number({ invalid_type_error: t('predictor.validation.invalidNumber') }).min(0).max(25, t('predictor.validation.max25')),
+    mt: z.number({ invalid_type_error: t('predictor.validation.invalidNumber') }).min(0).max(25, t('predictor.validation.max25')),
+  }), [t])
 
   const { register, handleSubmit, formState: { errors } } = useForm<PredictorForm>({
     resolver: zodResolver(predictorSchema),
@@ -104,13 +115,13 @@ export default function PredictorPage() {
     >
       {/* ── Input panel ──────────────────────────────────────────────────── */}
       <Card>
-        <CardTitle>🔮 توقع درجة الامتحان النهائي</CardTitle>
+        <CardTitle>🔮 {t('predictor.title')}</CardTitle>
         <p style={{ fontSize: '.83rem', color: 'var(--muted)', marginBottom: '1.2rem' }}>
-          أدخل درجتك الحالية وسيتوقع نموذج الذكاء الاصطناعي درجتك النهائية
+          {t('predictor.desc')}
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <Field label="درجة أعمال السنة (من 25)">
+          <Field label={t('predictor.cwLabel')}>
             <Input
               type="number"
               placeholder="20"
@@ -122,7 +133,7 @@ export default function PredictorPage() {
             />
           </Field>
 
-          <Field label="درجة نصف الترم (من 25)">
+          <Field label={t('predictor.mtLabel')}>
             <Input
               type="number"
               placeholder="18"
@@ -141,7 +152,7 @@ export default function PredictorPage() {
             fullWidth
             loading={predict.isPending}
           >
-            🔮 توقع الدرجة
+            🔮 {t('predictor.predictBtn')}
           </Button>
         </form>
       </Card>
@@ -164,17 +175,18 @@ function ResultCard({
 }: {
   result: PredictorResult & { isEstimate: boolean }
 }) {
+  const { t } = useTranslation()
   const g = gradeLabel(result.predT)
 
   const rows: [string, ReactNode][] = [
-    ['أعمال السنة',              `${result.cw} / 25`],
-    ['نصف الترم',                `${result.mt} / 25`],
-    ['الامتحان النهائي المتوقع', (
+    [t('predictor.cw'),              `${result.cw} / 25`],
+    [t('predictor.mt'),                `${result.mt} / 25`],
+    [t('predictor.finalExpected'), (
       <span style={{ color: 'var(--accent)', fontWeight: 800 }}>
         {result.predF.toFixed(1)} / 50
       </span>
     )],
-    ['المجموع المتوقع', (
+    [t('predictor.totalExpected'), (
       <span
         style={{
           color: result.predT >= 60 ? 'var(--success)' : 'var(--danger)',
@@ -185,7 +197,7 @@ function ResultCard({
         {result.predT.toFixed(1)} / 100
       </span>
     )],
-    ['التقدير المتوقع', (
+    [t('predictor.gradeExpected'), (
       <span
         style={{
           display: 'inline-flex',
@@ -199,7 +211,7 @@ function ResultCard({
           color: g.color,
         }}
       >
-        {g.ar}
+        {t(`grades.${g.ar}`)}
       </span>
     )],
   ]
@@ -223,7 +235,7 @@ function ResultCard({
         }}
       >
         <div style={{ fontFamily: 'Tajawal, sans-serif', fontWeight: 700, color: 'var(--accent)' }}>
-          📊 نتيجة التوقع
+          📊 {t('predictor.resultTitle')}
         </div>
         {result.isEstimate && (
           <span
@@ -236,7 +248,7 @@ function ResultCard({
               fontWeight: 700,
             }}
           >
-            تقدير تقريبي
+            {t('predictor.approxEstimate')}
           </span>
         )}
       </div>
@@ -280,14 +292,15 @@ function ResultCard({
 // Uses GRADE_TABLE constant instead of hardcoded JSX rows.
 
 function GradeTableCard() {
+  const { t } = useTranslation()
   return (
     <Card>
-      <CardTitle>📌 جدول التقديرات</CardTitle>
-      <Table headers={['النسبة', 'التقدير', 'GPA']}>
+      <CardTitle>📌 {t('predictor.gradeTableTitle')}</CardTitle>
+      <Table headers={[t('predictor.ratio'), t('predictor.grade'), t('predictor.gpa')]}>
         {GRADE_TABLE.map((row) => (
           <HoverRow key={row.range}>
             <td style={TABLE_TD}>{row.range}</td>
-            <td style={TABLE_TD}>{row.label}</td>
+            <td style={TABLE_TD}>{t(`gradeTable.${row.label}`)}</td>
             <td style={TABLE_TD}>{row.gpa}</td>
           </HoverRow>
         ))}

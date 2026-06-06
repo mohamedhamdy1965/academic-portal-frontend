@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle, EmptyState } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { ConfirmDialog } from '@/shared/components/ui/Modal'
 import { Input, Select } from '@/shared/components/ui/FormPrimitives'
 import { Table, HoverRow, TABLE_TD } from '@/shared/components/ui/Table'
-import { DEPT_NAMES, gpaStanding } from '@/shared/constants'
+import { gpaStanding } from '@/shared/constants'
 import type { Department, User } from '@/shared/types'
 
 const PAGE_SIZE = 5
@@ -20,6 +21,7 @@ export function StudentsManagementTable({
   onDelete: (studentId: string, onSuccess: () => void) => void
 }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState('all')
   const [standing, setStanding] = useState('all')
@@ -50,34 +52,44 @@ export function StudentsManagementTable({
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <div>
-            <CardTitle>إدارة الطلاب</CardTitle>
+            <CardTitle>{t('admin.studentsManagement')}</CardTitle>
             <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>
-              بحث، تصفية، واستعراض بيانات الطلاب.
+              {t('admin.studentsManagementDesc')}
             </p>
           </div>
-          <span style={{ color: 'var(--accent)', fontSize: '.8rem', fontWeight: 800 }}>{filtered.length} طالب</span>
+          <span style={{ color: 'var(--accent)', fontSize: '.8rem', fontWeight: 800 }}>
+            {t('admin.studentCount', { count: filtered.length })}
+          </span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px,1fr) 180px 180px', gap: '.75rem', marginBottom: '1rem' }} className="admin-filter-grid">
-          <Input placeholder="بحث بالاسم أو البريد أو الكود" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} />
+          <Input placeholder={t('admin.searchPlaceholder')} value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} />
           <Select value={department} onChange={(event) => { setDepartment(event.target.value); setPage(1) }}>
-            <option value="all">كل الأقسام</option>
+            <option value="all">{t('admin.allDepts')}</option>
             <option value="AI">AI</option>
             <option value="CS">CS</option>
             <option value="IS">IS</option>
             <option value="IT">IT</option>
           </Select>
           <Select value={standing} onChange={(event) => { setStanding(event.target.value); setPage(1) }}>
-            <option value="all">كل الحالات</option>
-            <option value="good">مستقر</option>
-            <option value="risk">تحت المتابعة</option>
+            <option value="all">{t('admin.allStatuses')}</option>
+            <option value="good">{t('admin.statusStable')}</option>
+            <option value="risk">{t('admin.statusAtRisk')}</option>
           </Select>
         </div>
 
         {!pageRows.length ? (
-          <EmptyState icon="□" message="لا توجد نتائج مطابقة للفلاتر الحالية." />
+          <EmptyState icon="□" message={t('admin.noResults')} />
         ) : (
-          <Table headers={['الطالب', 'الكود', 'القسم', 'السنة', 'GPA', 'الحالة', 'إجراءات']}>
+          <Table headers={[
+            t('admin.tableHeader.student'),
+            t('admin.tableHeader.code'),
+            t('admin.tableHeader.dept'),
+            t('admin.tableHeader.year'),
+            t('admin.tableHeader.gpa'),
+            t('admin.tableHeader.status'),
+            t('admin.tableHeader.actions')
+          ]}>
             {pageRows.map((student) => (
               <StudentRow
                 key={student._id}
@@ -94,9 +106,9 @@ export function StudentsManagementTable({
 
       <ConfirmDialog
         open={Boolean(deletingStudent)}
-        title="حذف الطالب"
-        message={`هل تريد حذف ${deletingStudent?.firstName ?? ''} ${deletingStudent?.lastName ?? ''} من بيانات الطلاب؟`}
-        confirmLabel="حذف"
+        title={t('admin.deleteStudentConfirmTitle')}
+        message={t('admin.deleteStudentConfirmMessage', { name: `${deletingStudent?.firstName ?? ''} ${deletingStudent?.lastName ?? ''}` })}
+        confirmLabel={t('common.delete')}
         loading={deletePending}
         onClose={() => setDeletingStudent(null)}
         onConfirm={() => {
@@ -111,6 +123,7 @@ export function StudentsManagementTable({
 }
 
 function StudentRow({ student, onDetails, onDelete }: { student: User; onDetails: () => void; onDelete: () => void }) {
+  const { t } = useTranslation()
   const standing = gpaStanding(student.gpa ?? 0)
   const isRisk = (student.gpa ?? 0) > 0 && (student.gpa ?? 0) < 2
   return (
@@ -120,16 +133,20 @@ function StudentRow({ student, onDetails, onDelete }: { student: User; onDetails
         <div style={{ color: 'var(--muted)', fontSize: '.72rem' }}>{student.email}</div>
       </td>
       <td style={TABLE_TD}>{student.studentId}</td>
-      <td style={TABLE_TD}>{DEPT_NAMES[student.department as Department] ?? student.department}</td>
+      <td style={TABLE_TD}>
+        {t('departments.' + student.department, { defaultValue: student.department })}
+      </td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>{student.academicYear ?? '-'}</td>
       <td style={{ ...TABLE_TD, textAlign: 'center', color: standing.color, fontWeight: 900 }}>{(student.gpa ?? 0).toFixed(2)}</td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
-        <StatusBadge color={isRisk ? 'var(--danger)' : 'var(--success)'}>{isRisk ? 'تحت المتابعة' : 'مستقر'}</StatusBadge>
+        <StatusBadge color={isRisk ? 'var(--danger)' : 'var(--success)'}>
+          {isRisk ? t('admin.statusAtRisk') : t('admin.statusStable')}
+        </StatusBadge>
       </td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
         <div style={{ display: 'flex', gap: '.4rem', justifyContent: 'center' }}>
-          <Button type="button" variant="ghost" size="sm" onClick={onDetails}>تفاصيل</Button>
-          <Button type="button" variant="danger" size="sm" onClick={onDelete}>حذف</Button>
+          <Button type="button" variant="ghost" size="sm" onClick={onDetails}>{t('admin.detailsBtn')}</Button>
+          <Button type="button" variant="danger" size="sm" onClick={onDelete}>{t('common.delete')}</Button>
         </div>
       </td>
     </HoverRow>
@@ -145,12 +162,13 @@ function StatusBadge({ color, children }: { color: string; children: string }) {
 }
 
 function Pagination({ page, pageCount, onPage }: { page: number; pageCount: number; onPage: (page: number) => void }) {
+  const { t } = useTranslation()
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.75rem', marginTop: '1rem', color: 'var(--muted)', fontSize: '.78rem' }}>
-      <span>صفحة {page} من {pageCount}</span>
+      <span>{t('admin.paginationText', { page, pageCount })}</span>
       <div style={{ display: 'flex', gap: '.45rem' }}>
-        <Button type="button" variant="ghost" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>السابق</Button>
-        <Button type="button" variant="ghost" size="sm" disabled={page >= pageCount} onClick={() => onPage(page + 1)}>التالي</Button>
+        <Button type="button" variant="ghost" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>{t('admin.paginationPrev')}</Button>
+        <Button type="button" variant="ghost" size="sm" disabled={page >= pageCount} onClick={() => onPage(page + 1)}>{t('admin.paginationNext')}</Button>
       </div>
     </div>
   )

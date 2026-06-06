@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle, EmptyState } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { ConfirmDialog } from '@/shared/components/ui/Modal'
@@ -19,6 +20,7 @@ export function AdminsManagementTable({
   onEdit: (admin: User) => void
   onDelete: (adminId: string, onSuccess: () => void) => void
 }) {
+  const { t, i18n } = useTranslation()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
@@ -47,7 +49,7 @@ export function AdminsManagementTable({
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '-'
     try {
-      return new Date(dateStr).toLocaleDateString('ar-EG', {
+      return new Date(dateStr).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -70,13 +72,13 @@ export function AdminsManagementTable({
           }}
         >
           <div>
-            <CardTitle>إدارة المشرفين</CardTitle>
+            <CardTitle>{t('super.adminsManagement')}</CardTitle>
             <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>
-              إنشاء، تعديل، وتعطيل حسابات المشرفين المساعدين.
+              {t('super.adminsManagementDesc')}
             </p>
           </div>
           <span style={{ color: 'var(--accent)', fontSize: '.8rem', fontWeight: 800 }}>
-            {filtered.length} مشرف
+            {t('super.adminsCount', { count: filtered.length })}
           </span>
         </div>
 
@@ -90,7 +92,7 @@ export function AdminsManagementTable({
           className="admin-filter-grid"
         >
           <Input
-            placeholder="بحث بالاسم، البريد أو اسم المستخدم..."
+            placeholder={t('super.searchPlaceholder')}
             value={search}
             onChange={(event) => {
               setSearch(event.target.value)
@@ -104,16 +106,23 @@ export function AdminsManagementTable({
               setPage(1)
             }}
           >
-            <option value="all">كل الحالات</option>
-            <option value="active">نشط</option>
-            <option value="inactive">غير نشط</option>
+            <option value="all">{t('admin.allStatuses')}</option>
+            <option value="active">{t('super.statusActive')}</option>
+            <option value="inactive">{t('super.statusInactive')}</option>
           </Select>
         </div>
 
         {!pageRows.length ? (
-          <EmptyState icon="□" message="لا توجد حسابات مشرفين مطابقة للبحث." />
+          <EmptyState icon="□" message={t('super.noResults')} />
         ) : (
-          <Table headers={['المشرف', 'اسم المستخدم', 'الهاتف', 'تاريخ الإنشاء', 'الحالة', 'إجراءات']}>
+          <Table headers={[
+            t('super.tableHeader.admin'),
+            t('super.tableHeader.username'),
+            t('super.tableHeader.phone'),
+            t('super.tableHeader.createdAt'),
+            t('super.tableHeader.status'),
+            t('super.tableHeader.actions')
+          ]}>
             {pageRows.map((admin) => (
               <HoverRow key={admin._id}>
                 <td style={TABLE_TD}>
@@ -127,16 +136,16 @@ export function AdminsManagementTable({
                 <td style={{ ...TABLE_TD, textAlign: 'center' }}>{formatDate(admin.createdAt)}</td>
                 <td style={{ ...TABLE_TD, textAlign: 'center' }}>
                   <StatusBadge color={(admin.status ?? 'active') === 'active' ? 'var(--success)' : 'var(--danger)'}>
-                    {(admin.status ?? 'active') === 'active' ? 'نشط' : 'غير نشط'}
+                    {(admin.status ?? 'active') === 'active' ? t('super.statusActive') : t('super.statusInactive')}
                   </StatusBadge>
                 </td>
                 <td style={{ ...TABLE_TD, textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: '.4rem', justifyContent: 'center' }}>
                     <Button type="button" variant="ghost" size="sm" onClick={() => onEdit(admin)}>
-                      تعديل
+                      {t('common.edit')}
                     </Button>
                     <Button type="button" variant="danger" size="sm" onClick={() => setDeletingAdmin(admin)}>
-                      حذف
+                      {t('common.delete')}
                     </Button>
                   </div>
                 </td>
@@ -150,9 +159,9 @@ export function AdminsManagementTable({
 
       <ConfirmDialog
         open={Boolean(deletingAdmin)}
-        title="حذف حساب المشرف"
-        message={`هل أنت متأكد من حذف حساب المشرف ${deletingAdmin?.firstName ?? ''} ${deletingAdmin?.lastName ?? ''}؟ لا يمكن التراجع عن هذا الإجراء.`}
-        confirmLabel="حذف الحساب"
+        title={t('super.deleteAdminConfirmTitle')}
+        message={t('super.deleteAdminConfirmMessage', { name: `${deletingAdmin?.firstName ?? ''} ${deletingAdmin?.lastName ?? ''}` })}
+        confirmLabel={t('super.deleteAdminConfirmBtn')}
         loading={deletePending}
         onClose={() => setDeletingAdmin(null)}
         onConfirm={() => {
@@ -186,6 +195,7 @@ function StatusBadge({ color, children }: { color: string; children: string }) {
 }
 
 function Pagination({ page, pageCount, onPage }: { page: number; pageCount: number; onPage: (page: number) => void }) {
+  const { t } = useTranslation()
   return (
     <div
       style={{
@@ -199,7 +209,7 @@ function Pagination({ page, pageCount, onPage }: { page: number; pageCount: numb
       }}
     >
       <span>
-        صفحة {page} من {pageCount}
+        {t('admin.paginationText', { page, pageCount })}
       </span>
       <div style={{ display: 'flex', gap: '.45rem' }}>
         <Button
@@ -209,7 +219,7 @@ function Pagination({ page, pageCount, onPage }: { page: number; pageCount: numb
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
         >
-          السابق
+          {t('admin.paginationPrev')}
         </Button>
         <Button
           type="button"
@@ -218,7 +228,7 @@ function Pagination({ page, pageCount, onPage }: { page: number; pageCount: numb
           disabled={page >= pageCount}
           onClick={() => onPage(page + 1)}
         >
-          التالي
+          {t('admin.paginationNext')}
         </Button>
       </div>
     </div>

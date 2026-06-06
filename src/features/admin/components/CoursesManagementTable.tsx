@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle, EmptyState } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { Input, Select } from '@/shared/components/ui/FormPrimitives'
@@ -25,6 +26,7 @@ export function CoursesManagementTable({
   onCreate: (payload: AdminCoursePayload, onSuccess: () => void) => void
   onUpdate: (courseCode: string, payload: Partial<AdminCoursePayload>, onSuccess: () => void) => void
 }) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [page, setPage] = useState(1)
@@ -48,25 +50,33 @@ export function CoursesManagementTable({
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <div>
-            <CardTitle>إدارة المواد</CardTitle>
-            <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>إنشاء وتعديل المواد وحالة إتاحتها.</p>
+            <CardTitle>{t('admin.coursesManagement')}</CardTitle>
+            <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>{t('admin.coursesManagementDesc')}</p>
           </div>
-          <Button type="button" variant="primary" size="sm" onClick={() => onCreateOpenChange(true)}>إنشاء مادة</Button>
+          <Button type="button" variant="primary" size="sm" onClick={() => onCreateOpenChange(true)}>{t('admin.createCourse')}</Button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px,1fr) 170px', gap: '.75rem', marginBottom: '1rem' }} className="admin-filter-grid">
-          <Input placeholder="بحث بالكود أو الاسم" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} />
+          <Input placeholder={t('admin.searchCoursesPlaceholder')} value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} />
           <Select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1) }}>
-            <option value="all">كل الحالات</option>
-            <option value="active">نشطة</option>
-            <option value="inactive">غير نشطة</option>
+            <option value="all">{t('admin.allStatuses')}</option>
+            <option value="active">{t('admin.statusActive')}</option>
+            <option value="inactive">{t('admin.statusInactive')}</option>
           </Select>
         </div>
 
         {!pageRows.length ? (
-          <EmptyState icon="□" message="لا توجد مواد مطابقة للفلاتر الحالية." />
+          <EmptyState icon="□" message={t('admin.noCoursesResults')} />
         ) : (
-          <Table headers={['الكود', 'اسم المادة', 'الساعات', 'الفصل', 'المستوى', 'الحالة', 'إجراءات']}>
+          <Table headers={[
+            t('admin.tableHeader.code'),
+            t('admin.tableHeader.name'),
+            t('admin.tableHeader.credits'),
+            t('admin.tableHeader.semester'),
+            t('admin.tableHeader.level'),
+            t('admin.tableHeader.status'),
+            t('admin.tableHeader.actions')
+          ]}>
             {pageRows.map((course) => (
               <CourseRow key={course.Code} course={course} onEdit={() => setEditingCourse(course)} />
             ))}
@@ -74,10 +84,10 @@ export function CoursesManagementTable({
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.75rem', marginTop: '1rem', color: 'var(--muted)', fontSize: '.78rem' }}>
-          <span>صفحة {safePage} من {pageCount}</span>
+          <span>{t('admin.paginationText', { page: safePage, pageCount })}</span>
           <div style={{ display: 'flex', gap: '.45rem' }}>
-            <Button type="button" variant="ghost" size="sm" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>السابق</Button>
-            <Button type="button" variant="ghost" size="sm" disabled={safePage >= pageCount} onClick={() => setPage(safePage + 1)}>التالي</Button>
+            <Button type="button" variant="ghost" size="sm" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>{t('admin.paginationPrev')}</Button>
+            <Button type="button" variant="ghost" size="sm" disabled={safePage >= pageCount} onClick={() => setPage(safePage + 1)}>{t('admin.paginationNext')}</Button>
           </div>
         </div>
       </Card>
@@ -106,6 +116,7 @@ export function CoursesManagementTable({
 }
 
 function CourseRow({ course, onEdit }: { course: AdminCourse; onEdit: () => void }) {
+  const { t } = useTranslation()
   return (
     <HoverRow>
       <td style={TABLE_TD}><span style={codeBadgeStyle}>{course.Code}</span></td>
@@ -123,11 +134,11 @@ function CourseRow({ course, onEdit }: { course: AdminCourse; onEdit: () => void
           fontSize: '.74rem',
           fontWeight: 900,
         }}>
-          {course.isActive ? 'نشطة' : 'غير نشطة'}
+          {course.isActive ? t('admin.statusActive') : t('admin.statusInactive')}
         </span>
       </td>
       <td style={{ ...TABLE_TD, textAlign: 'center' }}>
-        <Button type="button" variant="ghost" size="sm" onClick={onEdit}>تعديل</Button>
+        <Button type="button" variant="ghost" size="sm" onClick={onEdit}>{t('common.edit')}</Button>
       </td>
     </HoverRow>
   )

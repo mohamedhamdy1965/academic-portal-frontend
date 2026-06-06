@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle, EmptyState } from '@/shared/components/ui/Card'
 import type { AIPlanCourse, EnrolledCourse } from '@/shared/types'
 
@@ -7,20 +8,21 @@ interface AiRecommendationSectionProps {
 }
 
 export function AiRecommendationSection({ plan, courses }: AiRecommendationSectionProps) {
+  const { t } = useTranslation()
   const passedCodes = new Set(courses.filter((course) => course.grade >= 60).map((course) => course.courseCode))
 
   return (
     <Card>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.75rem', flexWrap: 'wrap' }}>
         <div>
-          <CardTitle>التوصيات الأكاديمية الذكية</CardTitle>
+          <CardTitle>{t('dashboard.recommendations')}</CardTitle>
           <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem', marginBottom: '1rem' }}>
-            مواد مقترحة بناءً على المواد المجتازة والقسم المفضل.
+            {t('dashboard.recommendationsDesc')}
           </p>
         </div>
         {plan.length > 0 && (
           <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '.8rem' }}>
-            {plan.length} توصيات
+            {t('dashboard.recommendationsCount', { count: plan.length })}
           </span>
         )}
       </div>
@@ -28,7 +30,7 @@ export function AiRecommendationSection({ plan, courses }: AiRecommendationSecti
       {plan.length === 0 ? (
         <EmptyState
           icon="◎"
-          message="لا توجد توصيات بعد. أضف موادك ودرجاتك حتى تظهر الخطة المقترحة."
+          message={t('dashboard.recommendationsEmpty')}
         />
       ) : (
         <div
@@ -52,6 +54,8 @@ export function AiRecommendationSection({ plan, courses }: AiRecommendationSecti
 }
 
 function RecommendationCard({ course, completed }: { course: AIPlanCourse; completed: boolean }) {
+  const { t } = useTranslation()
+
   return (
     <div
       style={{
@@ -76,14 +80,14 @@ function RecommendationCard({ course, completed }: { course: AIPlanCourse; compl
           {course.courseCode}
         </span>
         <span style={{ color: 'var(--gold)', fontSize: '.72rem', fontWeight: 800 }}>
-          {course.creditHours ?? 3} س
+          {t('dashboard.recommendationsHour', { count: course.creditHours ?? 3 })}
         </span>
       </div>
       <div style={{ fontSize: '.84rem', fontWeight: 700, lineHeight: 1.5, marginTop: '.55rem' }}>
         {course.courseName}
       </div>
       <div style={{ color: completed ? 'var(--success)' : 'var(--muted)', fontSize: '.72rem', marginTop: '.45rem' }}>
-        {completed ? 'مكتملة' : 'مناسبة للفصل القادم'}
+        {completed ? t('dashboard.completedLabel') : t('dashboard.suitableLabel')}
       </div>
     </div>
   )

@@ -37,7 +37,7 @@ body {
   font-family: 'Cairo', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
-  direction: rtl;
+  direction: inherit;
 }
 
 /* Subtle grid texture on the background */

@@ -1,24 +1,23 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import { Modal } from '@/shared/components/ui/Modal'
 import { Button } from '@/shared/components/ui/Button'
 import { Field, Input, Select } from '@/shared/components/ui/FormPrimitives'
 import type { AdminCourse, AdminCoursePayload, PreferredDepartment } from '@/shared/types'
 
-const schema = z.object({
-  Code: z.string().min(1, 'كود المادة مطلوب').regex(/^[A-Za-z]{2,3}\d{3}$/, 'مثال: CS316'),
-  name: z.string().min(2, 'اسم المادة مطلوب'),
-  Credits: z.number().min(1).max(6),
-  Semester: z.coerce.number().refine((value) => value === 1 || value === 2),
-  Required_level: z.coerce.number().refine((value) => [1, 2, 3, 4].includes(value)),
-  Required_Hours: z.number().min(0).max(136),
-  isActive: z.preprocess((value) => value === true || value === 'true', z.boolean()),
-  department: z.enum(['General', 'IS', 'IT', 'AI', 'CS']).optional(),
-})
-
-type CourseForm = z.infer<typeof schema>
+type CourseForm = {
+  Code: string
+  name: string
+  Credits: number
+  Semester: number
+  Required_level: number
+  Required_Hours: number
+  isActive: boolean
+  department?: 'General' | 'IS' | 'IT' | 'AI' | 'CS'
+}
 
 export function AdminCourseModal({
   open,
@@ -33,6 +32,19 @@ export function AdminCourseModal({
   onClose: () => void
   onSubmit: (payload: AdminCoursePayload) => void
 }) {
+  const { t } = useTranslation()
+
+  const schema = useMemo(() => z.object({
+    Code: z.string().min(1, t('admin.courseForm.codeRequired')).regex(/^[A-Za-z]{2,3}\d{3}$/, t('admin.courseForm.codeFormat')),
+    name: z.string().min(2, t('admin.courseForm.nameRequired')),
+    Credits: z.number().min(1).max(6),
+    Semester: z.coerce.number().refine((value) => value === 1 || value === 2),
+    Required_level: z.coerce.number().refine((value) => [1, 2, 3, 4].includes(value)),
+    Required_Hours: z.number().min(0).max(136),
+    isActive: z.preprocess((value) => value === true || value === 'true', z.boolean()),
+    department: z.enum(['General', 'IS', 'IT', 'AI', 'CS']).optional(),
+  }), [t])
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CourseForm>({
     resolver: zodResolver(schema),
   })
@@ -53,15 +65,15 @@ export function AdminCourseModal({
   return (
     <Modal
       open={open}
-      title={course ? 'تعديل مادة' : 'إنشاء مادة'}
+      title={course ? t('admin.courseForm.editTitle') : t('admin.courseForm.createTitle')}
       onClose={loading ? () => {} : onClose}
       maxWidth={560}
       footer={
         <>
           <Button type="submit" form="admin-course-form" variant="primary" size="md" loading={loading}>
-            {course ? 'حفظ' : 'إنشاء'}
+            {course ? t('common.save') : t('admin.courseForm.createBtn')}
           </Button>
-          <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={loading}>إلغاء</Button>
+          <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={loading}>{t('common.cancel')}</Button>
         </>
       }
     >
@@ -77,42 +89,42 @@ export function AdminCourseModal({
         noValidate
       >
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.85rem' }} className="admin-form-grid">
-          <Field label="كود المادة">
+          <Field label={t('admin.courseForm.codeLabel')}>
             <Input disabled={Boolean(course)} error={errors.Code?.message} {...register('Code')} />
           </Field>
-          <Field label="اسم المادة">
+          <Field label={t('admin.courseForm.nameLabel')}>
             <Input error={errors.name?.message} {...register('name')} />
           </Field>
-          <Field label="الساعات">
+          <Field label={t('admin.courseForm.creditsLabel')}>
             <Input type="number" error={errors.Credits?.message} {...register('Credits', { valueAsNumber: true })} />
           </Field>
-          <Field label="الفصل">
+          <Field label={t('admin.courseForm.semesterLabel')}>
             <Select {...register('Semester')}>
-              <option value={1}>الأول</option>
-              <option value={2}>الثاني</option>
+              <option value={1}>{t('admin.courseForm.semester1')}</option>
+              <option value={2}>{t('admin.courseForm.semester2')}</option>
             </Select>
           </Field>
-          <Field label="المستوى المطلوب">
+          <Field label={t('admin.courseForm.levelLabel')}>
             <Select {...register('Required_level')}>
               {[1, 2, 3, 4].map((level) => <option key={level} value={level}>{level}</option>)}
             </Select>
           </Field>
-          <Field label="الساعات المطلوبة">
+          <Field label={t('admin.courseForm.hoursLabel')}>
             <Input type="number" error={errors.Required_Hours?.message} {...register('Required_Hours', { valueAsNumber: true })} />
           </Field>
-          <Field label="القسم">
+          <Field label={t('admin.courseForm.departmentLabel')}>
             <Select {...register('department')}>
-              <option value="General">عام</option>
+              <option value="General">{t('admin.courseForm.deptGeneral')}</option>
               <option value="IS">IS</option>
               <option value="IT">IT</option>
               <option value="AI">AI</option>
               <option value="CS">CS</option>
             </Select>
           </Field>
-          <Field label="الحالة">
+          <Field label={t('admin.courseForm.statusLabel')}>
             <Select {...register('isActive')}>
-              <option value="true">نشطة</option>
-              <option value="false">غير نشطة</option>
+              <option value="true">{t('admin.courseForm.active')}</option>
+              <option value="false">{t('admin.courseForm.inactive')}</option>
             </Select>
           </Field>
         </div>

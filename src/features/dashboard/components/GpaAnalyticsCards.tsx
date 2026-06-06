@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { GRADUATION_HOURS } from '@/shared/constants'
 
 interface GpaAnalyticsCardsProps {
@@ -17,6 +18,8 @@ export function GpaAnalyticsCards({
   progress,
   standing,
 }: GpaAnalyticsCardsProps) {
+  const { t } = useTranslation()
+
   return (
     <section
       style={{
@@ -28,31 +31,31 @@ export function GpaAnalyticsCards({
     >
       <AnalyticsCard
         icon="★"
-        label="المعدل التراكمي"
+        label={t('dashboard.gpa')}
         value={gpa ? gpa.toFixed(2) : '0.00'}
-        sublabel={gpa > 0 ? standing.label : 'لا يوجد معدل بعد'}
+        sublabel={gpa > 0 ? t(`standing.${standing.label}`) : t('dashboard.gpaEmpty')}
         color={standing.color}
       />
       <AnalyticsCard
         icon="▣"
-        label="الساعات المجتازة"
+        label={t('dashboard.hoursPassed')}
         value={hours}
-        sublabel={`من ${GRADUATION_HOURS} ساعة`}
+        sublabel={t('dashboard.hoursFrom', { total: GRADUATION_HOURS })}
         color="var(--accent)"
         progress={progress}
       />
       <AnalyticsCard
         icon="✓"
-        label="مواد ناجحة"
+        label={t('dashboard.passedCourses')}
         value={passedCount}
-        sublabel="ضمن السجل الحالي"
+        sublabel={t('dashboard.passedCoursesSub')}
         color="var(--success)"
       />
       <AnalyticsCard
         icon="!"
-        label="مواد تحتاج متابعة"
+        label={t('dashboard.failedCourses')}
         value={failedCount}
-        sublabel={failedCount ? 'راجع خطة التعويض' : 'لا توجد مواد راسبة'}
+        sublabel={failedCount ? t('dashboard.failedCoursesSub') : t('dashboard.noFailedCourses')}
         color={failedCount ? 'var(--danger)' : 'var(--muted2)'}
       />
     </section>

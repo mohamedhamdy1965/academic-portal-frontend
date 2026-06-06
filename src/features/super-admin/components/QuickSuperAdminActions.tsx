@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 
@@ -8,6 +9,7 @@ export function QuickSuperAdminActions({
   onCreateAdmin: () => void
   onFocusAdmins: () => void
 }) {
+  const { t } = useTranslation()
   return (
     <Card style={{ marginBottom: '1.25rem' }}>
       <div
@@ -20,17 +22,17 @@ export function QuickSuperAdminActions({
         }}
       >
         <div>
-          <CardTitle>إجراءات سريعة</CardTitle>
+          <CardTitle>{t('super.quickActions')}</CardTitle>
           <p style={{ color: 'var(--muted)', fontSize: '.8rem', marginTop: '-.65rem' }}>
-            اختصارات لإدارة حسابات المشرفين ومتابعة أداء النظام.
+            {t('super.quickActionsDesc')}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '.55rem', flexWrap: 'wrap' }}>
           <Button type="button" variant="primary" size="sm" onClick={onCreateAdmin}>
-            إضافة مشرف جديد
+            {t('super.addAdminBtn')}
           </Button>
           <Button type="button" variant="ghost" size="sm" onClick={onFocusAdmins}>
-            جدول المشرفين
+            {t('super.adminsTableBtn')}
           </Button>
         </div>
       </div>

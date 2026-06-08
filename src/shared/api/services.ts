@@ -47,6 +47,16 @@ const remoteUserApi = {
         preferredDepartment,
       })
       .then((r) => r.data),
+
+  updateProfile: (payload: {
+    fullNameAr?: string
+    fullNameEn?: string
+    phoneNumber?: string
+    email?: string
+    address?: string
+    profileImage?: string
+  }) =>
+    apiClient.put<{ msg: string; user: User }>('/user/profile', payload).then((r) => r.data),
 }
 
 const remoteAiApi = {

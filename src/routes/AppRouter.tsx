@@ -12,6 +12,7 @@ const ResultsPage    = lazy(() => import('@/features/results/ResultsPage'))
 const CurriculumPage = lazy(() => import('@/features/curriculum/CurriculumPage'))
 const PredictorPage  = lazy(() => import('@/features/predictor/PredictorPage'))
 const AIPlanPage     = lazy(() => import('@/features/ai-plan/AIPlanPage'))
+const ProfilePage     = lazy(() => import('@/features/profile/ProfilePage'))
 const AdminDashboardPage = lazy(() => import('@/features/admin/AdminDashboardPage'))
 const StudentDetailsPage = lazy(() => import('@/features/admin/StudentDetailsPage'))
 const SuperAdminDashboardPage = lazy(() => import('@/features/super-admin/SuperAdminDashboardPage'))
@@ -68,6 +69,7 @@ export function AppRouter() {
             <Route index            element={<DashboardPage />} />
             <Route path="curriculum" element={<CurriculumPage />} />
             <Route path="results"    element={<ResultsPage />} />
+            <Route path="profile"    element={<ProfilePage />} />
             <Route path="predictor"  element={<PredictorPage />} />
             <Route path="aiplan"     element={<AIPlanPage />} />
             <Route path="admin"      element={<AdminDashboardPage />} />

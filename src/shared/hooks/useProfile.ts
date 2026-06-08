@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { userApi } from '@/shared/api/services'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { useAuth } from '@/providers/AuthProvider'
@@ -108,3 +109,31 @@ export function useUpdatePreferredDept() {
     },
   })
 }
+
+// ─── Update profile mutation ───────────────────────────────────────────────────
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation()
+  const { refreshUser } = useAuth()
+
+  return useMutation({
+    mutationFn: (payload: {
+      fullNameAr?: string
+      fullNameEn?: string
+      phoneNumber?: string
+      email?: string
+      address?: string
+      profileImage?: string
+    }) => userApi.updateProfile(payload),
+    onSuccess: (data) => {
+      toast(t('profile.saveSuccess') || 'تم حفظ الملف الشخصي بنجاح ✓', 'success')
+      queryClient.setQueryData(queryKeys.user.profile(), data.user)
+      refreshUser()
+    },
+    onError: (err: { message: string }) => {
+      toast(err.message, 'error')
+    },
+  })
+}
+

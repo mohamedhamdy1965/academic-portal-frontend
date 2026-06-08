@@ -128,6 +128,10 @@ function seedUsers(): StoredUser[] {
       enrolledCourses: studentCourses,
       AI_plan: { plan: [] },
       phoneNumber: '+201000000001',
+      fullNameAr: 'طالب تجريبي أول',
+      fullNameEn: 'Demo Student One',
+      address: 'القاهرة، مصر',
+      profileImage: '',
       createdAt: now,
       updatedAt: now,
     },
@@ -260,6 +264,11 @@ function makeStudent({
   courses: [string, number][]
   now: string
 }): StoredUser {
+  const arabicNames: Record<string, string> = {
+    'Nour': 'نور علي',
+    'Omar': 'عمر سمير',
+    'Mariam': 'مريم هاني'
+  }
   return {
     _id: id,
     studentId,
@@ -278,6 +287,10 @@ function makeStudent({
     enrolledCourses: courses.map(([code, grade]) => makeCourse(code, grade)).filter(Boolean) as EnrolledCourse[],
     AI_plan: { plan: [] },
     phoneNumber,
+    fullNameAr: arabicNames[firstName] || `${firstName} ${lastName}`,
+    fullNameEn: `${firstName} ${lastName}`,
+    address: 'القاهرة، مصر',
+    profileImage: '',
     createdAt: now,
     updatedAt: now,
   }
@@ -576,6 +589,40 @@ export const mockUserApi = {
     return delay({
       msg: 'Preferred department updated successfully',
       preferredDepartment: user.preferredDepartment ?? 'General',
+    })
+  },
+
+  async updateProfile(payload: {
+    fullNameAr?: string
+    fullNameEn?: string
+    phoneNumber?: string
+    email?: string
+    address?: string
+    profileImage?: string
+  }): Promise<{ msg: string; user: User }> {
+    const user = updateCurrentUser((draft) => {
+      if (payload.fullNameAr !== undefined) draft.fullNameAr = payload.fullNameAr
+      if (payload.fullNameEn !== undefined) draft.fullNameEn = payload.fullNameEn
+      if (payload.phoneNumber !== undefined) draft.phoneNumber = payload.phoneNumber
+      if (payload.email !== undefined) draft.email = payload.email
+      if (payload.address !== undefined) draft.address = payload.address
+      if (payload.profileImage !== undefined) draft.profileImage = payload.profileImage
+      
+      if (payload.fullNameEn) {
+        const parts = payload.fullNameEn.trim().split(/\s+/)
+        if (parts.length > 0) {
+          draft.firstName = parts[0]
+          draft.lastName = parts.slice(1).join(' ') || ''
+        }
+      }
+      
+      draft.updatedAt = new Date().toISOString()
+    })
+
+    if (!user) return reject('Not authorized', 401)
+    return delay({
+      msg: 'Profile updated successfully',
+      user: sanitizeUser(user),
     })
   },
 }

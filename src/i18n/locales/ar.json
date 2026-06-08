@@ -68,7 +68,8 @@
     "superAdmin": "الإشراف العام",
     "superAdminDashboard": "الإشراف العام",
     "guestPortal": "بوابة الزائر",
-    "discoveryPortal": "لوحة الاستكشاف"
+    "discoveryPortal": "لوحة الاستكشاف",
+    "profile": "الملف الشخصي"
   },
   "dashboard": {
     "hello": "أهلاً، {{name}}",
@@ -410,5 +411,35 @@
     "مقبول D+": "مقبول D+",
     "مقبول D": "مقبول D",
     "راسب F": "راسب F"
+  },
+  "profile": {
+    "title": "إدارة الملف الشخصي",
+    "personalInfo": "البيانات الشخصية",
+    "academicInfo": "البيانات الأكاديمية",
+    "accountInfo": "بيانات الحساب",
+    "fullNameAr": "الاسم الكامل باللغة العربية",
+    "fullNameEn": "الاسم الكامل باللغة الإنجليزية",
+    "phoneNumber": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "address": "العنوان",
+    "profileImage": "رابط الصورة الشخصية",
+    "studentId": "الرقم الجامعي",
+    "department": "القسم الدراسي",
+    "academicYear": "السنة الدراسية",
+    "gpa": "المعدل التراكمي",
+    "completedHours": "الساعات المجتازة",
+    "role": "الصلاحية",
+    "preferredDept": "التخصص الفرعي المفضل",
+    "editProfile": "تعديل الملف الشخصي",
+    "saveSuccess": "تم تحديث الملف الشخصي بنجاح ✓",
+    "validation": {
+      "fullNameArRequired": "الاسم الكامل باللغة العربية مطلوب",
+      "fullNameEnRequired": "الاسم الكامل باللغة الإنجليزية مطلوب",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "invalidEmail": "البريد الإلكتروني غير صحيح",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "invalidPhone": "رقم الهاتف غير صحيح",
+      "addressRequired": "العنوان مطلوب"
+    }
   }
 }

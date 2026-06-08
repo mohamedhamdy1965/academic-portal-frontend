@@ -44,6 +44,10 @@ export interface User {
   enrolledCourses?: EnrolledCourse[]
   AI_plan?: AIPlan
   phoneNumber?: string
+  fullNameAr?: string
+  fullNameEn?: string
+  address?: string
+  profileImage?: string
   createdAt?: string
   updatedAt?: string
 }

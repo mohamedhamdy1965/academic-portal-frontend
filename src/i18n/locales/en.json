@@ -68,7 +68,8 @@
     "superAdmin": "Super Admin",
     "superAdminDashboard": "Super Admin Dashboard",
     "guestPortal": "Guest Portal",
-    "discoveryPortal": "Explore Portal"
+    "discoveryPortal": "Explore Portal",
+    "profile": "Profile"
   },
   "dashboard": {
     "hello": "Hello, {{name}}",
@@ -410,5 +411,35 @@
     "مقبول D+": "Pass D+",
     "مقبول D": "Pass D",
     "راسب F": "Fail F"
+  },
+  "profile": {
+    "title": "Profile Management",
+    "personalInfo": "Personal Information",
+    "academicInfo": "Academic Information",
+    "accountInfo": "Account Information",
+    "fullNameAr": "Arabic Full Name",
+    "fullNameEn": "English Full Name",
+    "phoneNumber": "Phone Number",
+    "email": "Email Address",
+    "address": "Address",
+    "profileImage": "Profile Image URL",
+    "studentId": "Student ID",
+    "department": "Department",
+    "academicYear": "Academic Year",
+    "gpa": "GPA",
+    "completedHours": "Completed Credit Hours",
+    "role": "Role",
+    "preferredDept": "Preferred Specialty",
+    "editProfile": "Edit Profile",
+    "saveSuccess": "Profile updated successfully ✓",
+    "validation": {
+      "fullNameArRequired": "Arabic full name is required",
+      "fullNameEnRequired": "English full name is required",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email address",
+      "phoneRequired": "Phone number is required",
+      "invalidPhone": "Invalid phone number",
+      "addressRequired": "Address is required"
+    }
   }
 }

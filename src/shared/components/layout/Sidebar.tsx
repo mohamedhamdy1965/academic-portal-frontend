@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/dashboard',            icon: '🏠', labelKey: 'sidebar.dashboard',     group: 'main'  },
   { to: '/dashboard/curriculum', icon: '📚', labelKey: 'sidebar.curriculum', group: 'main'  },
   { to: '/dashboard/results',    icon: '📊', labelKey: 'sidebar.results', group: 'main'  },
+  { to: '/dashboard/profile',    icon: '👤', labelKey: 'sidebar.profile', group: 'main'  },
   { to: '/dashboard/predictor',  icon: '🔮', labelKey: 'sidebar.gradePredictor',      group: 'smart' },
   { to: '/dashboard/aiplan',     icon: '🤖', labelKey: 'sidebar.academicPlanner', group: 'smart' },
   { to: '/dashboard/admin',      icon: '▦', labelKey: 'sidebar.adminDashboard', group: 'admin' },

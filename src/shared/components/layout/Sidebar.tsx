@@ -1,8 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/providers/AuthProvider'
 import { toast } from '@/providers/ToastProvider'
+import { ConfirmDialog } from '@/shared/components/ui/Modal'
+import capitalLogo from '@/assets/capital-logo.jpg'
 
 const NAV_ITEMS = [
   { to: '/dashboard',            icon: '🏠', labelKey: 'sidebar.dashboard',     group: 'main'  },
@@ -28,7 +30,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   const isRtl = i18n.dir() === 'rtl'
 
-  const handleLogout = () => {
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+
+  const handleLogoutConfirm = () => {
+    setLogoutConfirmOpen(false)
     logout()
     toast(t('common.logout'), 'info')
     navigate('/login')
@@ -100,33 +105,43 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               width: 38,
               height: 38,
               borderRadius: 10,
-              background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+              background: '#fff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.2rem',
+              overflow: 'hidden',
               flexShrink: 0,
+              border: '1px solid rgba(255,255,255,.08)',
+              padding: '2px',
+              boxSizing: 'border-box',
             }}
           >
-            🎓
+            <img
+              src={capitalLogo}
+              alt="Capital University"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+              }}
+            />
           </div>
           <div
             style={{
               fontFamily: 'Tajawal, sans-serif',
-              fontSize: '.85rem',
+              fontSize: '.88rem',
               fontWeight: 800,
-              lineHeight: 1.35,
+              lineHeight: 1.2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1px',
             }}
           >
-            {t('sidebar.mainHeader')}
-            <span
-              style={{
-                display: 'block',
-                color: 'var(--accent)',
-                fontSize: '.78rem',
-              }}
-            >
-              Faculty of Computers & AI
+            <span style={{ color: 'var(--text)', fontSize: '.86rem', fontWeight: 800 }}>
+              جامعة العاصمة
+            </span>
+            <span style={{ color: 'var(--muted2)', fontSize: '.72rem', fontWeight: 600 }}>
+              Capital University
             </span>
           </div>
         </div>
@@ -200,7 +215,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         {/* User footer */}
-        <div style={{ padding: '1.1rem 1.3rem', borderTop: '1px solid var(--border)' }}>
+        <div style={{ padding: '1.1rem 1.2rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem' }}>
             <div
               style={{
@@ -241,28 +256,62 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 )}
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              title={t('common.logout')}
-              aria-label={t('common.logout')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--muted)',
-                fontSize: '1.1rem',
-                padding: '.3rem',
-                borderRadius: 6,
-                cursor: 'pointer',
-                transition: 'color .2s',
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--danger)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--muted)')}
-            >
-              ⏻
-            </button>
           </div>
+
+          <button
+            onClick={() => setLogoutConfirmOpen(true)}
+            title={t('common.logout')}
+            aria-label={t('common.logout')}
+            className="logout-button-ui"
+            style={{
+              width: '100%',
+              height: '42px',
+              padding: '0 1rem',
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: 10,
+              color: '#f87171',
+              fontFamily: 'Tajawal, sans-serif',
+              fontSize: '.86rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '.5rem',
+              cursor: 'pointer',
+              boxSizing: 'border-box',
+            }}
+          >
+            <span style={{ fontSize: '1rem' }}>⏻</span>
+            <span>{t('common.logout')}</span>
+          </button>
         </div>
       </aside>
+
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        title={t('common.logoutConfirmTitle')}
+        message={t('common.logoutConfirmMessage')}
+        confirmLabel={t('common.logoutConfirmButton')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={handleLogoutConfirm}
+        onClose={() => setLogoutConfirmOpen(false)}
+      />
+
+      <style>{`
+        .logout-button-ui {
+          transition: background .2s, border-color .2s, color .2s, transform .2s !important;
+        }
+        .logout-button-ui:hover {
+          background: rgba(239, 68, 68, 0.15) !important;
+          border-color: rgba(239, 68, 68, 0.45) !important;
+          color: #ef4444 !important;
+          transform: translateY(-1px);
+        }
+        .logout-button-ui:active {
+          transform: translateY(1px);
+        }
+      `}</style>
     </>
   )
 }

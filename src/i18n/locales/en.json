@@ -72,7 +72,8 @@
     "superAdminDashboard": "Super Admin Dashboard",
     "guestPortal": "Guest Portal",
     "discoveryPortal": "Explore Portal",
-    "profile": "Profile"
+    "profile": "Profile",
+    "graphMining": "Graph Mining"
   },
   "dashboard": {
     "hello": "Hello, {{name}}",
@@ -444,5 +445,42 @@
       "invalidPhone": "Invalid phone number",
       "addressRequired": "Address is required"
     }
+  },
+  "graphMining": {
+    "title": "Graph Mining Analytics",
+    "totalCourses": "Total Courses",
+    "highestDegree": "Highest Degree Score",
+    "highestPageRank": "Highest PageRank",
+    "highestBetweenness": "Highest Betweenness",
+    "searchPlaceholder": "Search courses...",
+    "course": "Course",
+    "degreeScore": "Degree Score",
+    "pagerank": "PageRank",
+    "betweenness": "Betweenness",
+    "ranking": "Ranking",
+    "priority": "Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "highestDegreeExplain": "Database Systems 1 has the highest degree centrality. It has the most direct prerequisite connections, making it a critical hub in the curriculum network.",
+    "highestPageRankExplain": "Programming Language 1 has the highest PageRank score. It is the most influential foundation course, as many subsequent major paths trace back to it.",
+    "highestBetweennessExplain": "Algorithms has the highest betweenness centrality. It acts as the primary bridge, connecting fundamental math/logic concepts to advanced AI and CS topics.",
+    "degreeTitle": "Highest Degree Centrality",
+    "pagerankTitle": "Highest PageRank",
+    "betweennessTitle": "Highest Betweenness",
+    "importantFoundation": "Important Foundation Courses",
+    "unlockedPaths": "Unlocked Paths",
+    "insightsTitle": "Prerequisite Graph Insights",
+    "insight1": "Programming Language 1 holds the highest PageRank score, establishing itself as the most critical entry point for student success.",
+    "insight2": "Database Systems 1 has the highest direct connections (Degree Score), unlocking multiple paths in Information Systems and Data specialties.",
+    "insight3": "Algorithms displays a very high betweenness score, serving as a bottleneck and bridging course before advanced Computer Science paths.",
+    "insight4": "Probability and Statistics is highly influential, establishing the core mathematical background required for Machine Learning and AI.",
+    "visualizationTitle": "Prerequisite Network Map",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "reset": "Reset View",
+    "interactiveHelp": "Hover over a node to see metrics. Click a node to highlight its direct prerequisite ancestors (in red) and unlocked dependents (in green). Drag background to pan. Use controls to zoom.",
+    "semester1": "First Semester",
+    "semester2": "Second Semester"
   }
 }

@@ -1,0 +1,174 @@
+{
+  "description": "General courses a student must focus on before specializing in each department",
+  "departments": {
+    "Computer Science": {
+      "semester_1": [
+        {
+          "general_course": "Probability and Statistics 1",
+          "code": "ST121",
+          "unlocks": ["Machine Learning"]
+        },
+        {
+          "general_course": "Logic Design",
+          "code": "CS221",
+          "unlocks": ["Computer Organization"]
+        },
+        {
+          "general_course": "Data Structures",
+          "code": "CS214",
+          "unlocks": ["Compilers"]
+        },
+        {
+          "general_course": "Operating Systems 1",
+          "code": "CS241",
+          "unlocks": ["Parallel Processing and High Performance Computing", "Operating Systems 2"]
+        }
+      ],
+      "semester_2": [
+        {
+          "general_course": "Discrete Mathematics",
+          "code": "MA112",
+          "unlocks": ["Theory of Computation"]
+        },
+        {
+          "general_course": "Programming Language 1",
+          "code": "CS112",
+          "unlocks": ["Computer Graphics 1"]
+        },
+        {
+          "general_course": "Algorithms",
+          "code": "CS316",
+          "unlocks": ["Artificial Intelligence"]
+        },
+        {
+          "general_course": "Computer Networks 1",
+          "code": "IT222",
+          "unlocks": ["Information and Computer Networks Security", "Distributed Systems and Cloud Computing"]
+        },
+        {
+          "general_course": "Software Engineering 1",
+          "code": "CS251",
+          "unlocks": ["Software Engineering 2", "CS Project"]
+        },
+        {
+          "general_course": "Probability and Statistics 2",
+          "code": "ST122",
+          "unlocks": ["Machine Learning"]
+        }
+      ]
+    },
+    "Information Systems": {
+      "semester_1": [
+        {
+          "general_course": "Fundamentals of Information Systems",
+          "code": "IS231",
+          "unlocks": ["Decision Support System", "Management Information System"]
+        },
+        {
+          "general_course": "Database Systems 1",
+          "code": "IS211",
+          "unlocks": ["Database Systems 2", "Data Storage and Retrieval", "Information System Security", "Big Data Technologies"]
+        }
+      ],
+      "semester_2": [
+        {
+          "general_course": "System Analysis and Design 1",
+          "code": "IS351",
+          "unlocks": ["System Analysis and Design 2", "IS Project"]
+        },
+        {
+          "general_course": "Internet Technology",
+          "code": "IT223",
+          "unlocks": ["Internet Applications"]
+        },
+        {
+          "general_course": "Probability and Statistics 2",
+          "code": "ST122",
+          "unlocks": ["Business Intelligence and Data Analytical"]
+        }
+      ]
+    },
+    "Internet Technology": {
+      "semester_1": [
+        {
+          "general_course": "Logic Design",
+          "code": "CS221",
+          "unlocks": ["Computer Architecture"]
+        },
+        {
+          "general_course": "Data Communication",
+          "code": "IT221",
+          "unlocks": ["Communication Technology"]
+        }
+      ],
+      "semester_2": [
+        {
+          "general_course": "Discrete Mathematics",
+          "code": "MA112",
+          "unlocks": ["Digital Signal Processing"]
+        },
+        {
+          "general_course": "Programming Language 1",
+          "code": "CS112",
+          "unlocks": ["Computer Graphics 1", "Multimedia"]
+        },
+        {
+          "general_course": "Algorithms",
+          "code": "CS316",
+          "unlocks": ["Artificial Intelligence", "Computer Vision"]
+        },
+        {
+          "general_course": "Computer Networks 1",
+          "code": "IT222",
+          "unlocks": ["Computers Network 2", "Information and Computer Networks Security", "IT Project"]
+        },
+        {
+          "general_course": "Signals and Systems",
+          "code": "IT241",
+          "unlocks": ["Image Processing 1"]
+        }
+      ]
+    },
+    "Artificial Intelligence": {
+      "semester_1": [
+        {
+          "general_course": "Probability and Statistics 1",
+          "code": "ST121",
+          "unlocks": ["Machine Learning"]
+        },
+        {
+          "general_course": "Database Systems 1",
+          "code": "IS211",
+          "unlocks": ["Big Data Technologies"]
+        }
+      ],
+      "semester_2": [
+        {
+          "general_course": "Mathematics 2",
+          "code": "MA113",
+          "unlocks": ["Convex Optimization Theory"]
+        },
+        {
+          "general_course": "Algorithms",
+          "code": "CS316",
+          "unlocks": ["Artificial Intelligence"]
+        },
+        {
+          "general_course": "Software Engineering 1",
+          "code": "CS251",
+          "unlocks": ["AI Project"]
+        },
+        {
+          "general_course": "Probability and Statistics 2",
+          "code": "ST122",
+          "unlocks": ["Machine Learning"]
+        },
+        {
+          "general_course": "Signals and Systems",
+          "code": "IT241",
+          "unlocks": ["Image Processing 1"]
+        }
+      ]
+    }
+  }
+}

@@ -72,7 +72,8 @@
     "superAdminDashboard": "الإشراف العام",
     "guestPortal": "بوابة الزائر",
     "discoveryPortal": "لوحة الاستكشاف",
-    "profile": "الملف الشخصي"
+    "profile": "الملف الشخصي",
+    "graphMining": "تحليل العلاقات"
   },
   "dashboard": {
     "hello": "أهلاً، {{name}}",
@@ -444,5 +445,42 @@
       "invalidPhone": "رقم الهاتف غير صحيح",
       "addressRequired": "العنوان مطلوب"
     }
+  },
+  "graphMining": {
+    "title": "تحليل علاقات المقررات",
+    "totalCourses": "إجمالي المقررات",
+    "highestDegree": "أعلى درجة علاقات (Degree)",
+    "highestPageRank": "أعلى رتبة صفحة (PageRank)",
+    "highestBetweenness": "أعلى درجة بينية (Betweenness)",
+    "searchPlaceholder": "البحث عن مقرر...",
+    "course": "المقرر",
+    "degreeScore": "درجة العلاقات",
+    "pagerank": "رتبة الصفحة",
+    "betweenness": "الدرجة البينية",
+    "ranking": "الترتيب",
+    "priority": "الأهمية",
+    "high": "عالية",
+    "medium": "متوسطة",
+    "low": "منخفضة",
+    "highestDegreeExplain": "يتميز مقرر Database Systems 1 بأعلى درجة علاقات مباشرة (Degree). هذا يجعله المركز الرئيسي للاتصال بالمتطلبات في الهيكل الدراسي.",
+    "highestPageRankExplain": "يتميز مقرر Programming Language 1 بأعلى رتبة صفحة (PageRank). وهو المقرر الأساسي الأكثر تأثيراً، حيث تنبع منه غالبية مسارات التخصص الأخرى.",
+    "highestBetweennessExplain": "يتميز مقرر Algorithms بأعلى درجة بينية (Betweenness). فهو بمثابة الجسر الأساسي الذي يربط بين المفاهيم الرياضية الأساسية والمواضيع المتقدمة.",
+    "degreeTitle": "أعلى درجة علاقات (Degree)",
+    "pagerankTitle": "أعلى رتبة صفحة (PageRank)",
+    "betweennessTitle": "أعلى درجة بينية (Betweenness)",
+    "importantFoundation": "المقررات التأسيسية الهامة",
+    "unlockedPaths": "المسارات المفتوحة",
+    "insightsTitle": "رؤى تحليل علاقات المقررات",
+    "insight1": "يسجل مقرر Programming Language 1 أعلى رتبة PageRank، مما يجعله نقطة الانطلاق الأكثر أهمية لنجاح الطالب في التخصص.",
+    "insight2": "يمتلك مقرر Database Systems 1 أكبر عدد من العلاقات المباشرة، ويفتح العديد من المواد في نظم المعلومات وهندسة البيانات.",
+    "insight3": "يظهر مقرر Algorithms درجة بينية عالية جداً، حيث يمثل عنق زجاجة وجسراً عبوراً إجبارياً قبل دراسة مقررات علوم الحاسب المتقدمة.",
+    "insight4": "تعتبر مادة الاحتمالات والإحصاء ذات تأثير كبير، إذ تشكل الأساس الرياضي اللازم للتخصص في الذكاء الاصطناعي وتعلم الآلة.",
+    "visualizationTitle": "مخطط شبكة المتطلبات الدراسية",
+    "zoomIn": "تكبير",
+    "zoomOut": "تصغير",
+    "reset": "إعادة الضبط",
+    "interactiveHelp": "مرر الماوس فوق أي مقرر لعرض مقاييسه. انقر لتحديد متطلباته السابقة المباشرة (باللون الأحمر) والمواد المفتوحة بعده (باللون الأخضر). اسحب الخلفية للتحريك. استخدم عناصر التحكم للتكبير والتصغير.",
+    "semester1": "الفصل الدراسي الأول",
+    "semester2": "الفصل الدراسي الثاني"
   }
 }

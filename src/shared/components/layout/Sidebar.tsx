@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/dashboard/predictor',  icon: '🔮', labelKey: 'sidebar.gradePredictor',      group: 'smart' },
   { to: '/dashboard/aiplan',     icon: '🤖', labelKey: 'sidebar.academicPlanner', group: 'smart' },
   { to: '/dashboard/admin',      icon: '▦', labelKey: 'sidebar.adminDashboard', group: 'admin' },
+  { to: '/dashboard/admin/graph-mining', icon: '🕸️', labelKey: 'sidebar.graphMining', group: 'admin' },
   { to: '/dashboard/super-admin', icon: '🛡️', labelKey: 'sidebar.superAdminDashboard', group: 'super' },
 ] as const
 

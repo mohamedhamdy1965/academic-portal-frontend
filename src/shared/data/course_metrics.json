@@ -1,0 +1,236 @@
+[
+  {
+    "course": "Programming Language 1",
+    "degree_score": 7,
+    "pagerank_score": 3.2223,
+    "betweenness_score": 30.0
+  },
+  {
+    "course": "Introduction to Computer science",
+    "degree_score": 1,
+    "pagerank_score": 2.8889,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Database Systems 1",
+    "degree_score": 10,
+    "pagerank_score": 1.7339,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Probability and Statistics 1",
+    "degree_score": 4,
+    "pagerank_score": 1.7312,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Data Structures",
+    "degree_score": 2,
+    "pagerank_score": 1.4394,
+    "betweenness_score": 26.0
+  },
+  {
+    "course": "Algorithms",
+    "degree_score": 3,
+    "pagerank_score": 1.367,
+    "betweenness_score": 33.0
+  },
+  {
+    "course": "Fundamentals of Information Systems",
+    "degree_score": 5,
+    "pagerank_score": 1.2806,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Artificial Intelligence",
+    "degree_score": 6,
+    "pagerank_score": 1.1318,
+    "betweenness_score": 32.0
+  },
+  {
+    "course": "Logic Design",
+    "degree_score": 3,
+    "pagerank_score": 1.0581,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Data Communication",
+    "degree_score": 2,
+    "pagerank_score": 0.9306,
+    "betweenness_score": 7.0
+  },
+  {
+    "course": "Mathematics 1",
+    "degree_score": 1,
+    "pagerank_score": 0.9272,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Mathematics 2",
+    "degree_score": 2,
+    "pagerank_score": 0.9144,
+    "betweenness_score": 7.0
+  },
+  {
+    "course": "Computer Networks 1",
+    "degree_score": 4,
+    "pagerank_score": 0.7684,
+    "betweenness_score": 10.0
+  },
+  {
+    "course": "System Analysis and Design 1",
+    "degree_score": 2,
+    "pagerank_score": 0.7301,
+    "betweenness_score": 5.0
+  },
+  {
+    "course": "Computer Graphics 1",
+    "degree_score": 4,
+    "pagerank_score": 0.66,
+    "betweenness_score": 8.0
+  },
+  {
+    "course": "Signals and Systems",
+    "degree_score": 2,
+    "pagerank_score": 0.6218,
+    "betweenness_score": 8.0
+  },
+  {
+    "course": "Probability and Statistics 2",
+    "degree_score": 3,
+    "pagerank_score": 0.5771,
+    "betweenness_score": 2.0
+  },
+  {
+    "course": "Discrete Mathematics",
+    "degree_score": 3,
+    "pagerank_score": 0.5325,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Software Engineering 1",
+    "degree_score": 3,
+    "pagerank_score": 0.5325,
+    "betweenness_score": 6.0
+  },
+  {
+    "course": "System Analysis and Design 2",
+    "degree_score": 3,
+    "pagerank_score": 0.5325,
+    "betweenness_score": 6.0
+  },
+  {
+    "course": "Computer Architecture",
+    "degree_score": 3,
+    "pagerank_score": 0.5325,
+    "betweenness_score": 3.0
+  },
+  {
+    "course": "Database Systems 2",
+    "degree_score": 2,
+    "pagerank_score": 0.5134,
+    "betweenness_score": 3.0
+  },
+  {
+    "course": "Operating Systems 1",
+    "degree_score": 2,
+    "pagerank_score": 0.405,
+    "betweenness_score": 4.0
+  },
+  {
+    "course": "Machine Learning",
+    "degree_score": 2,
+    "pagerank_score": 0.405,
+    "betweenness_score": 4.0
+  },
+  {
+    "course": "Natural Language Processing",
+    "degree_score": 2,
+    "pagerank_score": 0.405,
+    "betweenness_score": 10.0
+  },
+  {
+    "course": "Internet Technology",
+    "degree_score": 1,
+    "pagerank_score": 0.3859,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Microprocessors",
+    "degree_score": 1,
+    "pagerank_score": 0.3859,
+    "betweenness_score": 2.0
+  },
+  {
+    "course": "Operation Research",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Programming Language 2",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 2.0
+  },
+  {
+    "course": "Modeling and Simulation",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "Internet Applications",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 1.0
+  },
+  {
+    "course": "Knowledge base management",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 2.0
+  },
+  {
+    "course": "Computers Network 2",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 3.0
+  },
+  {
+    "course": "Image Processing 1",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 3.0
+  },
+  {
+    "course": "Speech Processing",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 3.0
+  },
+  {
+    "course": "Embedded Systems",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 2.0
+  },
+  {
+    "course": "Convex Optimization Theory",
+    "degree_score": 1,
+    "pagerank_score": 0.2775,
+    "betweenness_score": 2.0
+  },
+  {
+    "course": "English 1",
+    "degree_score": 1,
+    "pagerank_score": 0.2138,
+    "betweenness_score": 0.0
+  },
+  {
+    "course": "English 2",
+    "degree_score": 1,
+    "pagerank_score": 0.2138,
+    "betweenness_score": 0.0
+  }
+]
